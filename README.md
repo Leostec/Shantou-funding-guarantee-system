@@ -15,7 +15,7 @@ https://blog.csdn.net/brrdg_sefg/article/details/146048667?ops_request_misc=%257
 ''' 
 
 #### 5. 安装 vue
-
+ 
 #### 6. 修改index.js中的数据库链接，如果仅需要本地服务则只需要修改端口和密码，数据库名称。
 
 #### 	如果希望局域网运行，则按照下列步骤修改：
