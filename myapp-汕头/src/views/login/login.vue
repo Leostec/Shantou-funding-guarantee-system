@@ -105,7 +105,7 @@ const rules = {
 };
 
 const handleLoginSuccess = (role = "user") => {
-  const target = role === "admin" ? "/admin" : "/user";
+  const target = role === "admin" ? "/admin" : "/vis";
   window.location.href = `http://localhost:8080${target}`;
 };
 

@@ -14,6 +14,7 @@ const routes = [
   {
     path:'/user',
     component:Layout,
+    redirect:'/vis',
     children:[
       {
         path:'/user',

@@ -411,7 +411,9 @@
           </div>
 
           <div class="submit-section">
-        <el-button type="success" @click="predictContent">提交</el-button>
+            <el-button type="primary" @click="saveDraft" style="margin-right: 10px;">暂存</el-button>
+            <el-button type="info" @click="restoreDraft" style="margin-right: 10px;">恢复暂存</el-button>
+            <el-button type="success" @click="predictContent">提交</el-button>
           </div>
         </form>
       </div>
@@ -447,6 +449,7 @@ import { ref } from "vue";
 import axios from "axios";
 import { Form, InputNumber, Button } from "ant-design-vue";
 import { ExclamationCircleFilled } from "@ant-design/icons-vue";
+import { ElMessage } from "element-plus";
 
 //创建列表
 const predictions = ref([]);
@@ -526,6 +529,118 @@ const movable_mortgage = ref('');
 const other_collateral = ref('');
 const is_growth_stage = ref('0');
 const used_youdaibao = ref('0');
+
+// 暂存/恢复用：统一收集表单字段
+const DRAFT_KEY = "vis_form_draft";
+const formFields = {
+  project_number,
+  company_name,
+  project_manager,
+  application_amount,
+  application_period,
+  repayment_method,
+  controller_gender,
+  education_level,
+  marital_status,
+  residence_type,
+  local_residence_years,
+  main_business,
+  industry_category,
+  industry_experience,
+  is_foreign_trade,
+  is_cautious_industry,
+  employee_count,
+  business_premises_type,
+  monthly_rent,
+  monthly_balance,
+  daily_balance,
+  electricity_consumption,
+  cash_at_meeting,
+  receivables_at_meeting,
+  inventory_at_meeting,
+  payables_at_meeting,
+  total_assets,
+  total_liabilities,
+  net_assets,
+  annual_sales,
+  annual_net_profit,
+  monthly_net_profit,
+  profit_usage,
+  core_assets,
+  hard_liabilities,
+  operating_liabilities,
+  sales_debt_ratio,
+  asset_debt_ratio,
+  monthly_repayment,
+  total_monthly_repayment,
+  repayment_income_ratio,
+  average_payment_period,
+  family_harmony,
+  minor_children,
+  adult_family_members,
+  working_family_members,
+  bad_habits,
+  other_soft_info,
+  credit_inquiries,
+  overdue_times,
+  max_overdue_amount,
+  external_guarantee,
+  education_work_experience,
+  family_social_relations,
+  business_model,
+  counter_guarantee,
+  bank_inflow,
+  bank_outflow,
+  highest_flow_month,
+  lowest_flow_month,
+  loan_purpose,
+  project_conclusion,
+  company_guarantee,
+  personal_guarantee,
+  additional_guarantor,
+  property_mortgage,
+  property_second_mortgage,
+  equipment_mortgage,
+  receivables_pledge,
+  equity_pledge,
+  movable_mortgage,
+  other_collateral,
+  is_growth_stage,
+  used_youdaibao,
+};
+
+const saveDraft = () => {
+  const draft = {};
+  Object.entries(formFields).forEach(([key, refObj]) => {
+    draft[key] = refObj.value;
+  });
+  localStorage.setItem(
+    DRAFT_KEY,
+    JSON.stringify({ data: draft, savedAt: new Date().toISOString() })
+  );
+  ElMessage.success("已暂存当前填写内容");
+};
+
+const restoreDraft = () => {
+  const raw = localStorage.getItem(DRAFT_KEY);
+  if (!raw) {
+    ElMessage.warning("暂无暂存数据");
+    return;
+  }
+  try {
+    const parsed = JSON.parse(raw);
+    const data = parsed?.data || {};
+    Object.entries(formFields).forEach(([key, refObj]) => {
+      if (Object.prototype.hasOwnProperty.call(data, key)) {
+        refObj.value = data[key];
+      }
+    });
+    ElMessage.success("已恢复上次暂存内容");
+  } catch (e) {
+    console.error("恢复暂存失败:", e);
+    ElMessage.error("暂存数据损坏，请重新填写");
+  }
+};
 
 //预测结果展示
 const predicted = ref(null);
