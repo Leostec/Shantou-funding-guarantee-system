@@ -147,9 +147,9 @@ const columns = [
     key: "project_manager",
   },
   {
-    title: "是否通过",
-    dataIndex: "money",
-    key: "money",
+    title: "预测结果(万元)",
+    dataIndex: "predicted",
+    key: "predicted",
   },
 ];
 
@@ -170,13 +170,15 @@ async function fetchTableDataWithSearch() {
     );
     tableData.value = response.data;
 
-    // 更新计数变量
-    countZero.value = tableData.value.filter((item) => item.money === 0).length;
+    // 更新计数变量（使用 predicted 字段）
+    countZero.value = tableData.value.filter(
+      (item) => Number(item.predicted) === 0
+    ).length;
     countLessThanOrEqual300.value = tableData.value.filter(
-      (item) => item.money <= 30
+      (item) => Number(item.predicted) <= 30
     ).length;
     countGreater300.value = tableData.value.filter(
-      (item) => item.money > 30
+      (item) => Number(item.predicted) > 30
     ).length;
   } catch (error) {
     console.error("Error fetching table data:", error);
