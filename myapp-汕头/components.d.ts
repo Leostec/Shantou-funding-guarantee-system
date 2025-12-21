@@ -17,6 +17,8 @@ declare module 'vue' {
     ElPagination: typeof import('element-plus/es')['ElPagination']
     ElTable: typeof import('element-plus/es')['ElTable']
     ElTableColumn: typeof import('element-plus/es')['ElTableColumn']
+    ElTabPane: typeof import('element-plus/es')['ElTabPane']
+    ElTabs: typeof import('element-plus/es')['ElTabs']
     Heatmap2: typeof import('./src/components/heatmap2.vue')['default']
     Meigui: typeof import('./src/components/meigui.vue')['default']
     Ml: typeof import('./src/components/ml.vue')['default']

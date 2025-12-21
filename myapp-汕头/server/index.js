@@ -7,7 +7,7 @@ const conn = mysql.createConnection({
     host: 'localhost',
     port: '3306',
     user: 'root',
-    password: 'root123a',
+    password: 'root',
     database: 'airport',
     charset: 'utf8mb4',
     collation: 'utf8mb4_unicode_ci'

@@ -22,6 +22,8 @@ import logging
 from sklearn.preprocessing import StandardScaler
 import json
 from dotenv import load_dotenv
+import pymysql
+from werkzeug.security import generate_password_hash, check_password_hash
 
 # Load environment variables
 load_dotenv()
@@ -37,8 +39,53 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 CORS(app)
 
+# Database configuration
+DB_CONFIG = {
+    "host": os.getenv("DB_HOST", "localhost"),
+    "port": int(os.getenv("DB_PORT", "3306")),
+    "user": os.getenv("DB_USER", "root"),
+    "password": os.getenv("DB_PASSWORD", "root"),
+    "database": os.getenv("DB_NAME", "airport"),
+    "cursorclass": pymysql.cursors.DictCursor,
+    "charset": "utf8mb4",
+}
+
+# Create user table for authentication
+def init_user_table():
+    try:
+        with pymysql.connect(**DB_CONFIG) as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(
+                    """
+                    CREATE TABLE IF NOT EXISTS users (
+                        id INT AUTO_INCREMENT PRIMARY KEY,
+                        username VARCHAR(100) UNIQUE NOT NULL,
+                        password_hash VARCHAR(255) NOT NULL,
+                        role VARCHAR(20) NOT NULL DEFAULT 'user',
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    ) CHARACTER SET utf8mb4;
+                    """
+                )
+                # 保证 password_hash 字段足够长，兼容 PBKDF2 哈希
+                cursor.execute(
+                    """
+                    ALTER TABLE users
+                    MODIFY password_hash VARCHAR(512) NOT NULL;
+                    """
+                )
+            conn.commit()
+        logger.info("User table is ready.")
+    except Exception as e:
+        logger.error(f"Failed to initialize users table: {e}")
+
+def get_db_connection():
+    """Return a new MySQL connection using shared config."""
+    return pymysql.connect(**DB_CONFIG)
+
+init_user_table()
+
 # Configure static folder path for SHAP files
-SHAP_DIR = '/Users/Leo/研究生/资产评估/汕头合作/system/shap_files'
+SHAP_DIR = r'C:\Users\liujiaming\Desktop\shantou\Shantou-funding-guarantee-system\shap_files'
 if not os.path.exists(SHAP_DIR):
     os.makedirs(SHAP_DIR)
 
@@ -53,6 +100,62 @@ def convert_numpy_types(obj):
     elif isinstance(obj, list):
         return [convert_numpy_types(item) for item in obj]
     return obj
+
+@app.route('/register', methods=['POST'])
+def register_user():
+    data = request.get_json() or {}
+    username = data.get('username', '').strip()
+    password = data.get('password', '').strip()
+
+    if not username or not password:
+        return jsonify({"message": "用户名和密码不能为空"}), 400
+    if len(password) > 128:
+        return jsonify({"message": "密码过长，请少于128字符"}), 400
+
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute("SELECT id FROM users WHERE username = %s", (username,))
+                if cursor.fetchone():
+                    return jsonify({"message": "用户名已存在"}), 400
+
+                # 使用 werkzeug PBKDF2-SHA256 生成哈希，避免 bcrypt 72 字节限制
+                password_hash = generate_password_hash(password)
+                cursor.execute(
+                    "INSERT INTO users (username, password_hash, role) VALUES (%s, %s, %s)",
+                    (username, password_hash, "user"),
+                )
+            conn.commit()
+        return jsonify({"message": "注册成功", "role": "user"}), 201
+    except Exception as e:
+        logger.error(f"Registration error: {e}")
+        return jsonify({"message": "注册失败"}), 500
+
+@app.route('/login', methods=['POST'])
+def login_user():
+    data = request.get_json() or {}
+    username = data.get('username', '').strip()
+    password = data.get('password', '').strip()
+
+    if not username or not password:
+        return jsonify({"message": "用户名和密码不能为空"}), 400
+
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(
+                    "SELECT id, password_hash, role FROM users WHERE username = %s",
+                    (username,),
+                )
+                user = cursor.fetchone()
+        if not user or not check_password_hash(user["password_hash"], password):
+            return jsonify({"message": "用户名或密码错误"}), 401
+
+        return jsonify({"message": "登录成功", "role": user.get("role", "user")})
+    except Exception as e:
+        logger.error(f"Login error: {e}")
+        return jsonify({"message": "登录失败"}), 500
+
 class Robot:
     def __init__(self):
         # Initialize the large language model
