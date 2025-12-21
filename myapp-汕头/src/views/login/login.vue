@@ -105,6 +105,8 @@ const rules = {
 };
 
 const handleLoginSuccess = (role = "user") => {
+  localStorage.setItem("username", loginForm.value.username);
+  localStorage.setItem("authRole", role || "user");
   const target = role === "admin" ? "/admin" : "/vis";
   window.location.href = `http://localhost:8080${target}`;
 };

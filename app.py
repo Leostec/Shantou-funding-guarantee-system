@@ -78,11 +78,37 @@ def init_user_table():
     except Exception as e:
         logger.error(f"Failed to initialize users table: {e}")
 
+def ensure_admin_user():
+    """Ensure there is an admin user; password from env ADMIN_PASSWORD or default 'admin123'."""
+    admin_username = os.getenv("ADMIN_USERNAME", "admin")
+    admin_password = os.getenv("ADMIN_PASSWORD", "admin123")
+    try:
+        with pymysql.connect(**DB_CONFIG) as conn:
+            with conn.cursor() as cursor:
+                cursor.execute("SELECT id, role FROM users WHERE username = %s", (admin_username,))
+                user = cursor.fetchone()
+                if not user:
+                    cursor.execute(
+                        "INSERT INTO users (username, password_hash, role) VALUES (%s, %s, %s)",
+                        (admin_username, generate_password_hash(admin_password), "admin"),
+                    )
+                    conn.commit()
+                    logger.info("Default admin created.")
+                elif user.get("role") != "admin":
+                    cursor.execute(
+                        "UPDATE users SET role=%s WHERE id=%s",
+                        ("admin", user["id"]),
+                    )
+                    conn.commit()
+    except Exception as e:
+        logger.error(f"Failed to ensure admin user: {e}")
+
 def get_db_connection():
     """Return a new MySQL connection using shared config."""
     return pymysql.connect(**DB_CONFIG)
 
 init_user_table()
+ensure_admin_user()
 
 # Configure static folder path for SHAP files
 SHAP_DIR = r'C:\Users\liujiaming\Desktop\shantou\Shantou-funding-guarantee-system\shap_files'
@@ -150,6 +176,13 @@ def login_user():
                 user = cursor.fetchone()
         if not user or not check_password_hash(user["password_hash"], password):
             return jsonify({"message": "用户名或密码错误"}), 401
+        # 确保 admin 账号的角色为 admin
+        if username == os.getenv("ADMIN_USERNAME", "admin") and user.get("role") != "admin":
+            with get_db_connection() as conn:
+                with conn.cursor() as cursor:
+                    cursor.execute("UPDATE users SET role=%s WHERE id=%s", ("admin", user["id"]))
+                conn.commit()
+            user["role"] = "admin"
 
         return jsonify({"message": "登录成功", "role": user.get("role", "user")})
     except Exception as e:
@@ -159,7 +192,7 @@ def login_user():
 class Robot:
     def __init__(self):
         # Initialize the large language model
-        self.model = ChatOpenAI(model="deepseek-reasoner",base_url = "https://api.deepseek.com", temperature=0.2, max_tokens=8192)
+        self.model = ChatOpenAI(model="deepseek-chat",base_url = "https://api.deepseek.com", temperature=0.2, max_tokens=8192)
         self.row = 0  # Process the first row of input data (single JSON input in this case)
 
     def qiye_data(self, dataset: dict) -> str:

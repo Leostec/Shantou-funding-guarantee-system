@@ -113,4 +113,24 @@ const router = createRouter({
   routes
 })
 
+router.beforeEach((to, from, next) => {
+  const authRole = localStorage.getItem('authRole');
+  const isLoggedIn = !!authRole;
+  if (to.path === '/') {
+    next();
+    return;
+  }
+  // 未登录统一跳转登录
+  if (!isLoggedIn) {
+    next({ path: '/' });
+    return;
+  }
+  // 非 admin 拒绝访问 admin 路由
+  if (to.path.startsWith('/admin') && authRole !== 'admin') {
+    next({ path: '/' });
+    return;
+  }
+  next();
+});
+
 export default router

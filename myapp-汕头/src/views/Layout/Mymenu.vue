@@ -10,8 +10,12 @@
           </a-menu>
       </a-layout-sider>
       <a-layout>
-          <a-layout-header style="background: #00F5FF; padding: 0">
-              <h2 class="title">评估平台</h2>
+          <a-layout-header style="background: #00F5FF; padding: 0; display: flex; align-items: center; justify-content: space-between; padding-left: 16px; padding-right: 16px;">
+              <div class="title-wrap">
+                <h2 class="title">评估平台</h2>
+                <span class="welcome" v-if="username">欢迎您，{{ username }}！</span>
+              </div>
+              <a-button type="primary" danger @click="logout">退出登录</a-button>
           </a-layout-header>
           <a-layout-content style="margin: 0 16px">
               <router-view/>
@@ -28,12 +32,32 @@ import {
   FileOutlined,
 } from '@ant-design/icons-vue';
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { message } from 'ant-design-vue';
 const collapsed = ref<boolean>(false);
 const selectedKeys = ref<string[]>(['1']);
+const router = useRouter();
+const username = ref<string>(localStorage.getItem('username') || '');
+
+const logout = () => {
+  localStorage.removeItem('authRole');
+  localStorage.removeItem('username');
+  message.success('已退出登录');
+  router.push('/');
+};
 </script>
 <style scoped>
 .title{
   text-align: center;
+}
+.title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.welcome {
+  font-size: 1.5em;
+  color: #000;
 }
 
 .site-layout .site-layout-background {

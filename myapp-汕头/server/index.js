@@ -1,4 +1,5 @@
 const mysql = require('mysql')
+const util = require('util')
 const express = require('express')
 const app = express()
 const cors = require('cors')
@@ -12,6 +13,9 @@ const conn = mysql.createConnection({
     charset: 'utf8mb4',
     collation: 'utf8mb4_unicode_ci'
 })
+
+// promisify query for async/await
+const queryAsync = util.promisify(conn.query).bind(conn)
 
 // 创建新的数据表
 const createTableSQL = `
@@ -329,7 +333,7 @@ app.post('/insert-prediction', async (req, res) => {
             prediction.prediction_text
         ];
 
-        const [result] = await conn.query(sql, values);
+        const result = await queryAsync(sql, values);
         console.log('Insert result:', result);
 
         res.json({ 

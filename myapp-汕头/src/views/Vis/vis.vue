@@ -895,20 +895,15 @@ const predictContent = async () => {
     
     // 处理响应数据
     if (response.data) {
-      // 将响应数据转换为字符串
       const responseData = response.data;
       let resultText = '';
       
-      // 检查响应数据的类型并相应处理
+      // 优先从对象字段拼接展示文本
       if (typeof responseData === 'object') {
-        // 如果是对象，遍历其属性
-        for (const key in responseData) {
-          if (responseData.hasOwnProperty(key)) {
-            resultText += `${key}: ${responseData[key]}\n`;
-          }
-        }
+        Object.keys(responseData).forEach((key) => {
+          resultText += `${key}: ${responseData[key]}\n`;
+        });
       } else {
-        // 如果不是对象，直接使用
         resultText = responseData.toString();
       }
       
@@ -916,11 +911,21 @@ const predictContent = async () => {
       predictionText.value = resultText;
       console.log('设置预测结果文本:', predictionText.value);
       
-      // 从响应文本中提取预测金额用于判断
-      const match = resultText.match(/模型对该企业的评估资产的预测结果：(\d+\.?\d*)万元/);
+      // 优先从 JSON 字段读取预测金额，缺失时再尝试文本正则
+      let predictedAmount = Number(
+        responseData?.["模型预测金额"] ??
+        responseData?.model_result ??
+        responseData?.predicted ??
+        responseData?.prediction
+      );
+      if (Number.isNaN(predictedAmount)) {
+        const match = resultText.match(/模型对该企业的评估资产的预测结果：(\d+\.?\d*)万元/);
+        if (match && match[1]) {
+          predictedAmount = parseFloat(match[1]);
+        }
+      }
       
-      if (match && match[1]) {
-        const predictedAmount = parseFloat(match[1]);
+      if (!Number.isNaN(predictedAmount)) {
         predicted.value = predictedAmount;
 
     // 检查是否有需要暂缓的情况
