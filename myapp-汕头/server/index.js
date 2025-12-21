@@ -90,6 +90,9 @@ CREATE TABLE IF NOT EXISTS loan_application (
     loan_purpose TEXT,
     predicted TINYINT,
     prediction_text TEXT,
+    expert_opinion TEXT,
+    expert_amount DECIMAL(15,2),
+    created_by VARCHAR(100),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 )`;
 
@@ -103,6 +106,9 @@ CREATE TABLE IF NOT EXISTS datahuizong (
     project_manager VARCHAR(50),
     report_number VARCHAR(50),
     predicted TINYINT,
+    expert_opinion TEXT,
+    expert_amount DECIMAL(15,2),
+    created_by VARCHAR(100),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 )`;
 
@@ -133,8 +139,8 @@ app.post('/insert-huizong', async (req, res) => {
         console.log('接收到的汇总数据:', data);
 
         const sql = `INSERT INTO datahuizong(
-            company_name, date, application_period, project_manager, report_number, predicted
-        ) VALUES (?, ?, ?, ?, ?, ?)`;
+            company_name, date, application_period, project_manager, report_number, predicted, created_by
+        ) VALUES (?, ?, ?, ?, ?, ?, ?)`;
         
         const values = [
             data.company_name,
@@ -142,7 +148,8 @@ app.post('/insert-huizong', async (req, res) => {
             data.application_period,
             data.project_manager,
             data.report_number,
-            data.predicted
+            data.predicted,
+            data.created_by || null
         ];
         
         conn.query(sql, values, (err, results) => {
@@ -258,8 +265,8 @@ app.post('/insert-prediction', async (req, res) => {
             property_second_mortgage, equipment_mortgage, is_growth_stage, used_youdaibao,
             education_work_experience, family_social_relations, business_model, counter_guarantee,
             main_business, profit_usage, other_soft_info, loan_purpose,
-            predicted, prediction_text
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+            predicted, prediction_text, created_by
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
         const values = [
             prediction.project_number,
@@ -330,7 +337,8 @@ app.post('/insert-prediction', async (req, res) => {
             prediction.other_soft_info,
             prediction.loan_purpose,
             prediction.predicted,
-            prediction.prediction_text
+            prediction.prediction_text,
+            prediction.created_by || null
         ];
 
         const result = await queryAsync(sql, values);
@@ -471,8 +479,8 @@ app.post('/datahuizong', async (req, res) => {
         console.log('接收到的汇总数据:', data);
 
         const sql = `INSERT INTO datahuizong(
-            company_name, date, application_period, project_manager, report_number, predicted
-        ) VALUES (?, ?, ?, ?, ?, ?)`;
+            company_name, date, application_period, project_manager, report_number, predicted, created_by
+        ) VALUES (?, ?, ?, ?, ?, ?, ?)`;
 
         const values = [
             data.company_name,
@@ -480,7 +488,8 @@ app.post('/datahuizong', async (req, res) => {
             data.application_period,
             data.project_manager,
             data.report_number,
-            data.predicted
+            data.predicted,
+            data.created_by || null
         ];
 
         conn.query(sql, values, (err, result) => {

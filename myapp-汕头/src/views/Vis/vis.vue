@@ -959,7 +959,8 @@ const predictContent = async () => {
           application_period: application_period.value,
           project_manager: project_manager.value,
           report_number: project_number.value, // 使用 project_number 作为 report_number
-          predicted: predictedAmount
+          predicted: predictedAmount,
+          created_by: localStorage.getItem("username") || ""
         };
 
         // 准备详细信息数据
@@ -1033,7 +1034,8 @@ const predictContent = async () => {
           loan_purpose: loan_purpose.value,
           predicted: predictedAmount,
           prediction_text: predictionText.value, // 添加预测结果文本
-          created_at: new Date().toISOString()
+          created_at: new Date().toISOString(),
+          created_by: localStorage.getItem("username") || ""
         };
 
         // 保存到两个数据库
