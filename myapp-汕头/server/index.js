@@ -139,8 +139,8 @@ app.post('/insert-huizong', async (req, res) => {
         console.log('接收到的汇总数据:', data);
 
         const sql = `INSERT INTO datahuizong(
-            company_name, date, application_period, project_manager, report_number, predicted, created_by
-        ) VALUES (?, ?, ?, ?, ?, ?, ?)`;
+            company_name, date, application_period, project_manager, report_number, predicted, expert_opinion, expert_amount, created_by
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
         
         const values = [
             data.company_name,
@@ -149,6 +149,8 @@ app.post('/insert-huizong', async (req, res) => {
             data.project_manager,
             data.report_number,
             data.predicted,
+            data.expert_opinion || null,
+            data.expert_amount || null,
             data.created_by || null
         ];
         
@@ -248,98 +250,34 @@ app.post('/insert-prediction', async (req, res) => {
             return res.status(400).json({ error: `Missing required fields: ${missingFields.join(', ')}` });
         }
 
-        const sql = `INSERT INTO loan_application (
-            project_number, company_name, project_manager, application_amount, application_period,
-            repayment_method, controller_gender, education_level, marital_status, residence_type,
-            local_residence_years, industry_category, industry_experience, is_foreign_trade,
-            is_cautious_industry, employee_count, business_premises_type, monthly_rent,
-            monthly_balance, daily_balance, electricity_consumption, cash_at_meeting,
-            receivables_at_meeting, inventory_at_meeting, payables_at_meeting, total_assets,
-            total_liabilities, net_assets, annual_sales, annual_net_profit, monthly_net_profit,
-            core_assets, hard_liabilities, operating_liabilities, sales_debt_ratio,
-            asset_debt_ratio, monthly_repayment, total_monthly_repayment, repayment_income_ratio,
-            average_payment_period, family_harmony, minor_children, adult_family_members,
-            working_family_members, credit_inquiries, overdue_times, max_overdue_amount,
-            bank_inflow, bank_outflow, highest_flow_month, lowest_flow_month,
-            company_guarantee, personal_guarantee, additional_guarantor, property_mortgage,
-            property_second_mortgage, equipment_mortgage, is_growth_stage, used_youdaibao,
-            education_work_experience, family_social_relations, business_model, counter_guarantee,
-            main_business, profit_usage, other_soft_info, loan_purpose,
-            predicted, prediction_text, created_by
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-
-        const values = [
-            prediction.project_number,
-            prediction.company_name,
-            prediction.project_manager,
-            prediction.application_amount,
-            prediction.application_period,
-            prediction.repayment_method,
-            prediction.controller_gender,
-            prediction.education_level,
-            prediction.marital_status,
-            prediction.residence_type,
-            prediction.local_residence_years,
-            prediction.industry_category,
-            prediction.industry_experience,
-            prediction.is_foreign_trade,
-            prediction.is_cautious_industry,
-            prediction.employee_count,
-            prediction.business_premises_type,
-            prediction.monthly_rent,
-            prediction.monthly_balance,
-            prediction.daily_balance,
-            prediction.electricity_consumption,
-            prediction.cash_at_meeting,
-            prediction.receivables_at_meeting,
-            prediction.inventory_at_meeting,
-            prediction.payables_at_meeting,
-            prediction.total_assets,
-            prediction.total_liabilities,
-            prediction.net_assets,
-            prediction.annual_sales,
-            prediction.annual_net_profit,
-            prediction.monthly_net_profit,
-            prediction.core_assets,
-            prediction.hard_liabilities,
-            prediction.operating_liabilities,
-            prediction.sales_debt_ratio,
-            prediction.asset_debt_ratio,
-            prediction.monthly_repayment,
-            prediction.total_monthly_repayment,
-            prediction.repayment_income_ratio,
-            prediction.average_payment_period,
-            prediction.family_harmony,
-            prediction.minor_children,
-            prediction.adult_family_members,
-            prediction.working_family_members,
-            prediction.credit_inquiries,
-            prediction.overdue_times,
-            prediction.max_overdue_amount,
-            prediction.bank_inflow,
-            prediction.bank_outflow,
-            prediction.highest_flow_month,
-            prediction.lowest_flow_month,
-            prediction.company_guarantee,
-            prediction.personal_guarantee,
-            prediction.additional_guarantor,
-            prediction.property_mortgage,
-            prediction.property_second_mortgage,
-            prediction.equipment_mortgage,
-            prediction.is_growth_stage,
-            prediction.used_youdaibao,
-            prediction.education_work_experience,
-            prediction.family_social_relations,
-            prediction.business_model,
-            prediction.counter_guarantee,
-            prediction.main_business,
-            prediction.profit_usage,
-            prediction.other_soft_info,
-            prediction.loan_purpose,
-            prediction.predicted,
-            prediction.prediction_text,
-            prediction.created_by || null
+        const columns = [
+            'project_number', 'company_name', 'project_manager', 'application_amount', 'application_period',
+            'repayment_method', 'controller_gender', 'education_level', 'marital_status', 'residence_type',
+            'local_residence_years', 'industry_category', 'industry_experience', 'is_foreign_trade',
+            'is_cautious_industry', 'employee_count', 'business_premises_type', 'monthly_rent',
+            'monthly_balance', 'daily_balance', 'electricity_consumption', 'cash_at_meeting',
+            'receivables_at_meeting', 'inventory_at_meeting', 'payables_at_meeting', 'total_assets',
+            'total_liabilities', 'net_assets', 'annual_sales', 'annual_net_profit', 'monthly_net_profit',
+            'core_assets', 'hard_liabilities', 'operating_liabilities', 'sales_debt_ratio',
+            'asset_debt_ratio', 'monthly_repayment', 'total_monthly_repayment', 'repayment_income_ratio',
+            'average_payment_period', 'family_harmony', 'minor_children', 'adult_family_members',
+            'working_family_members', 'credit_inquiries', 'overdue_times', 'max_overdue_amount',
+            'bank_inflow', 'bank_outflow', 'highest_flow_month', 'lowest_flow_month',
+            'company_guarantee', 'personal_guarantee', 'additional_guarantor', 'property_mortgage',
+            'property_second_mortgage', 'equipment_mortgage', 'is_growth_stage', 'used_youdaibao',
+            'education_work_experience', 'family_social_relations', 'business_model', 'counter_guarantee',
+            'main_business', 'profit_usage', 'other_soft_info', 'loan_purpose',
+            'predicted', 'prediction_text', 'expert_opinion', 'expert_amount', 'created_by'
         ];
+
+        const sql = `INSERT INTO loan_application (${columns.join(', ')}) VALUES (${columns.map(() => '?').join(', ')})`;
+
+        const values = columns.map((key) => {
+            if (key === 'expert_opinion') return prediction.expert_opinion || null;
+            if (key === 'expert_amount') return prediction.expert_amount || null;
+            if (key === 'created_by') return prediction.created_by || null;
+            return prediction[key];
+        });
 
         const result = await queryAsync(sql, values);
         console.log('Insert result:', result);
@@ -479,8 +417,8 @@ app.post('/datahuizong', async (req, res) => {
         console.log('接收到的汇总数据:', data);
 
         const sql = `INSERT INTO datahuizong(
-            company_name, date, application_period, project_manager, report_number, predicted, created_by
-        ) VALUES (?, ?, ?, ?, ?, ?, ?)`;
+            company_name, date, application_period, project_manager, report_number, predicted, expert_opinion, expert_amount, created_by
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
         const values = [
             data.company_name,
@@ -489,6 +427,8 @@ app.post('/datahuizong', async (req, res) => {
             data.project_manager,
             data.report_number,
             data.predicted,
+            data.expert_opinion || null,
+            data.expert_amount || null,
             data.created_by || null
         ];
 
