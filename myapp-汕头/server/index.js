@@ -422,6 +422,84 @@ app.get('/loan-application', (req, res) => {
     });
 });
 
+// 更新贷款申请数据（按 id）
+app.put('/loan-application/:id', (req, res) => {
+    const id = req.params.id;
+    const data = req.body || {};
+
+    if (!id) {
+        return res.status(400).send({ error: 'id is required' });
+    }
+
+    const updatableColumns = [
+        'project_number', 'company_name', 'project_manager', 'application_amount', 'application_period',
+        'repayment_method', 'controller_gender', 'education_level', 'marital_status', 'residence_type',
+        'local_residence_years', 'industry_category', 'industry_experience', 'is_foreign_trade',
+        'is_cautious_industry', 'employee_count', 'business_premises_type', 'monthly_rent',
+        'monthly_balance', 'daily_balance', 'electricity_consumption', 'cash_at_meeting',
+        'receivables_at_meeting', 'inventory_at_meeting', 'payables_at_meeting', 'total_assets',
+        'total_liabilities', 'net_assets', 'annual_sales', 'annual_net_profit', 'monthly_net_profit',
+        'core_assets', 'hard_liabilities', 'operating_liabilities', 'sales_debt_ratio',
+        'asset_debt_ratio', 'monthly_repayment', 'total_monthly_repayment', 'repayment_income_ratio',
+        'average_payment_period', 'family_harmony', 'minor_children', 'adult_family_members',
+        'working_family_members', 'credit_inquiries', 'overdue_times', 'max_overdue_amount',
+        'bank_inflow', 'bank_outflow', 'highest_flow_month', 'lowest_flow_month',
+        'company_guarantee', 'personal_guarantee', 'additional_guarantor', 'property_mortgage',
+        'property_second_mortgage', 'equipment_mortgage', 'is_growth_stage', 'used_youdaibao',
+        'education_work_experience', 'family_social_relations', 'business_model', 'counter_guarantee',
+        'main_business', 'profit_usage', 'other_soft_info', 'loan_purpose',
+        'predicted', 'prediction_text', 'expert_opinion', 'expert_amount', 'created_by'
+    ];
+
+    const fieldsToUpdate = updatableColumns.filter(col => Object.prototype.hasOwnProperty.call(data, col));
+    if (fieldsToUpdate.length === 0) {
+        return res.status(400).send({ error: 'No valid fields to update' });
+    }
+
+    const setClause = fieldsToUpdate.map(col => `${col} = ?`).join(', ');
+    const values = fieldsToUpdate.map(col => data[col]);
+    values.push(id);
+
+    const sql = `UPDATE loan_application SET ${setClause} WHERE id = ?`;
+
+    conn.query(sql, values, (err, result) => {
+        if (err) {
+            console.error('Error updating loan_application:', err);
+            return res.status(500).send({ error: err.message });
+        }
+
+        // 同步更新 datahuizong（以 project_number 作为 report_number）
+        if (data.project_number) {
+            const updateHuizongSql = `
+                UPDATE datahuizong 
+                SET company_name = ?, application_period = ?, project_manager = ?, predicted = ?, expert_opinion = ?, expert_amount = ?, created_by = ?
+                WHERE report_number = ?
+            `;
+            const huizongValues = [
+                data.company_name || null,
+                data.application_period || null,
+                data.project_manager || null,
+                data.predicted || null,
+                data.expert_opinion || null,
+                data.expert_amount || null,
+                data.created_by || null,
+                data.project_number
+            ];
+
+            conn.query(updateHuizongSql, huizongValues, (err2) => {
+                if (err2) {
+                    console.error('Error updating datahuizong:', err2);
+                    // 不阻断主表更新结果，返回警告
+                    return res.send({ success: true, message: 'loan_application updated, but failed to update datahuizong', warning: err2.message });
+                }
+                return res.send({ success: true, message: 'Updated successfully' });
+            });
+        } else {
+            return res.send({ success: true, message: 'Updated successfully' });
+        }
+    });
+});
+
 app.post('/datahuizong', async (req, res) => {
     try {
         const data = req.body;

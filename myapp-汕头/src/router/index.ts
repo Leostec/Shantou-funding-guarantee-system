@@ -10,6 +10,7 @@ const JikuIm = ()=>import('../views/Result/JikuList/jikuim.vue')
 const LangqiaoPackage = ()=>import('../views/Result/LqList/Lqpackage.vue')
 const Fjjyk = ()=>import('../views/Result/FjjykList/Fjjyk.vue')
 const MyEntries = ()=>import('../views/MyEntries/myEntries.vue')
+const ModelEvaluate = ()=>import('../views/ModelEvaluate/modelEvaluate.vue')
 
 const routes = [
   {
@@ -36,6 +37,11 @@ const routes = [
         path:'/my-entries',
         name:'myEntries',
         component:MyEntries,
+      },
+      {
+        path:'/model-evaluate',
+        name:'modelEvaluate',
+        component:ModelEvaluate,
       },
       {
         path:'/jiku',

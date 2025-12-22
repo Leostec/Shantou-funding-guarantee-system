@@ -2,8 +2,8 @@
   <div class="page">
     <div class="page-header">
       <div>
-        <h2>我的录入</h2>
-        <p class="subtitle">查看我提交的每一条评估记录</p>
+        <h2>模型评估</h2>
+        <p class="subtitle">对我提交的记录重新调用模型预测并保存结果</p>
       </div>
       <div class="actions">
         <span class="count">共 {{ records.length }} 条</span>
@@ -29,7 +29,13 @@
     >
       <template #bodyCell="{ column, record }">
         <template v-if="column.key === 'actions'">
-          <a-button type="link" @click="openEdit(record)">编辑</a-button>
+          <a-button
+            type="link"
+            :loading="predictingId === (record.id || record.project_number)"
+            @click="handlePredict(record)"
+          >
+            预测
+          </a-button>
         </template>
       </template>
 
@@ -46,33 +52,13 @@
         </div>
       </template>
     </a-table>
-
-    <a-modal
-      v-model:visible="editVisible"
-      title="编辑录入"
-      ok-text="保存"
-      cancel-text="取消"
-      :confirm-loading="saving"
-      width="900px"
-      @ok="submitEdit"
-    >
-      <a-form layout="vertical" class="edit-grid">
-        <a-form-item
-          v-for="key in editableFields"
-          :key="key"
-          :label="fieldLabels[key] || key"
-        >
-          <a-input v-model:value="editForm[key]" :disabled="key === 'created_at' || key === 'id'" />
-        </a-form-item>
-      </a-form>
-    </a-modal>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { computed, onMounted, ref } from 'vue';
+import { h, onMounted, ref } from 'vue';
 import axios from 'axios';
-import { message } from 'ant-design-vue';
+import { message, Modal } from 'ant-design-vue';
 
 interface RecordItem {
   [key: string]: any;
@@ -81,10 +67,7 @@ interface RecordItem {
 const username = ref<string>(localStorage.getItem('username') || '');
 const records = ref<RecordItem[]>([]);
 const loading = ref<boolean>(false);
-const editVisible = ref<boolean>(false);
-const saving = ref<boolean>(false);
-const editForm = ref<RecordItem>({});
-const currentRecordId = ref<string | number | null>(null);
+const predictingId = ref<string | number | null>(null);
 
 const columns = [
   { title: '企业编号', dataIndex: 'project_number', key: 'project_number' },
@@ -249,14 +232,6 @@ const detailOrder = [
   'created_at',
 ];
 
-const editableFields = computed(() => {
-  const base = detailOrder.filter((key) => key !== 'created_at');
-  const extras = Object.keys(editForm.value || {}).filter(
-    (key) => !base.includes(key) && key !== 'id'
-  );
-  return [...base, ...extras];
-});
-
 const getDisplayEntries = (record: RecordItem) => {
   const extraKeys = Object.keys(record).filter((key) => !detailOrder.includes(key));
   const orderedKeys = [...detailOrder, ...extraKeys];
@@ -280,28 +255,66 @@ const formatDateTime = (val: any) => {
   return d.toLocaleString('zh-CN', { hour12: false });
 };
 
-const openEdit = (record: RecordItem) => {
-  currentRecordId.value = record.id || record.project_number;
-  editForm.value = { ...record };
-  editVisible.value = true;
-};
-
-const submitEdit = async () => {
-  if (!currentRecordId.value) {
-    message.error('缺少记录ID，无法更新');
+const handlePredict = async (record: RecordItem) => {
+  const id = record.id || record.project_number;
+  if (!id) {
+    message.error('缺少记录ID，无法预测');
     return;
   }
-  saving.value = true;
+  predictingId.value = id;
   try {
-    await axios.put(`http://localhost:8989/loan-application/${currentRecordId.value}`, editForm.value);
-    message.success('保存成功');
-    editVisible.value = false;
+    // 调用后端模型接口
+    const resp = await axios.post("http://127.0.0.1:5000/demo", record);
+    let predictionText = '';
+    if (resp.data) {
+      if (typeof resp.data === 'object') {
+        Object.keys(resp.data).forEach((key) => {
+          predictionText += `${key}: ${resp.data[key]}\n`;
+        });
+      } else {
+        predictionText = resp.data.toString();
+      }
+    }
+
+    let predictedAmount = Number(
+      resp.data?.["模型预测金额"] ??
+      resp.data?.model_result ??
+      resp.data?.predicted ??
+      resp.data?.prediction
+    );
+    if (Number.isNaN(predictedAmount)) {
+      const match = predictionText.match(/([\d\.]+)/);
+      if (match && match[1]) {
+        predictedAmount = parseFloat(match[1]);
+      }
+    }
+
+    // 保存到数据库
+    await axios.put(`http://localhost:8989/loan-application/${id}`, {
+      predicted: predictedAmount,
+      prediction_text: predictionText,
+    });
+
+    Modal.info({
+      title: '预测完成',
+      width: 900,
+      centered: true,
+      content: h('div', { style: 'max-height:60vh;overflow:auto;' }, [
+        h('p', `预测额度：${predictedAmount ?? '未识别'}`),
+        h('p', `模型文本：${predictionText || '无'}`),
+      ]),
+      onOk: () => {
+        window.location.reload();
+      },
+    });
+
+    // 刷新列表数据
     await fetchEntries();
   } catch (error: any) {
-    console.error('更新失败', error);
-    message.error(error?.response?.data?.error || '更新失败');
+    console.error('预测失败', error);
+    message.error(error?.response?.data?.error || '预测失败');
   } finally {
-    saving.value = false;
+    predictingId.value = null;
   }
 };
 
@@ -382,13 +395,5 @@ onMounted(() => {
 .value {
   color: #1f1f1f;
   word-break: break-all;
-}
-
-.edit-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 12px 16px;
-  max-height: 60vh;
-  overflow-y: auto;
 }
 </style>

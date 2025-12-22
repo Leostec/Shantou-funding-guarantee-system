@@ -4,7 +4,7 @@
     <div class="main-content">
       <!-- 左侧输入表单 -->
       <div class="input-section">
-    <form @submit.prevent="predictContent">
+    <form @submit.prevent>
           <!-- 基础信息 -->
           <div class="form-section">
             <h3>基础信息</h3>
@@ -422,32 +422,8 @@
             <el-button type="primary" @click="saveDraft" style="margin-right: 10px;">暂存</el-button>
             <el-button type="info" @click="restoreDraft" style="margin-right: 10px;">恢复暂存</el-button>
             <el-button type="warning" @click="saveWithoutPredict" style="margin-right: 10px;">保存</el-button>
-            <el-button type="success" @click="predictContent">提交</el-button>
           </div>
         </form>
-      </div>
-
-      <!-- 右侧结果输出 -->
-      <div class="output-section">
-        <div class="result-container">
-          <h3>评估结果</h3>
-          <div v-if="isLoading" class="loading-container">
-            <div class="loading-spinner"></div>
-            <p class="loading-text">大模型正在判断中，请耐心等待...</p>
-          </div>
-          <div v-else-if="predictionText" class="result-content">
-            <div class="prediction-text" v-html="predictionText.replace(/\n/g, '<br>')"></div>
-            <div v-if="issues.length > 0" class="issues-list">
-              <p class="issues-title">存在以下情况:</p>
-              <ul>
-                <li v-for="issue in issues" :key="issue">{{ issue }}</li>
-            </ul>
-            </div>
-          </div>
-          <div v-else class="no-result">
-            请填写表单并点击提交按钮获取评估结果
-          </div>
-        </div>
       </div>
     </div>
   </div>

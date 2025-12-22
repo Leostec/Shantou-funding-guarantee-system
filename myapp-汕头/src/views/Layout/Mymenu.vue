@@ -5,11 +5,15 @@
       <a-menu v-model:selectedKeys="selectedKeys" theme="dark" mode="inline">
         <a-menu-item key="/vis" @click="$router.push('/vis')">
           <pie-chart-outlined />
-          <span>小微企业贷款担保额度评估平台</span>
+          <span>信息录入</span>
         </a-menu-item>
         <a-menu-item key="/my-entries" @click="$router.push('/my-entries')">
           <user-outlined />
           <span>我的录入</span>
+        </a-menu-item>
+        <a-menu-item key="/model-evaluate" @click="$router.push('/model-evaluate')">
+          <desktop-outlined />
+          <span>模型评估</span>
         </a-menu-item>
       </a-menu>
     </a-layout-sider>
