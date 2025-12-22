@@ -11,6 +11,7 @@ const LangqiaoPackage = ()=>import('../views/Result/LqList/Lqpackage.vue')
 const Fjjyk = ()=>import('../views/Result/FjjykList/Fjjyk.vue')
 const MyEntries = ()=>import('../views/MyEntries/myEntries.vue')
 const ModelEvaluate = ()=>import('../views/ModelEvaluate/modelEvaluate.vue')
+const ExpertReview = ()=>import('../views/ExpertReview/expertReview.vue')
 
 const routes = [
   {
@@ -42,6 +43,11 @@ const routes = [
         path:'/model-evaluate',
         name:'modelEvaluate',
         component:ModelEvaluate,
+      },
+      {
+        path:'/expert-review',
+        name:'expertReview',
+        component:ExpertReview,
       },
       {
         path:'/jiku',

@@ -15,6 +15,10 @@
           <desktop-outlined />
           <span>模型评估</span>
         </a-menu-item>
+        <a-menu-item key="/expert-review" @click="$router.push('/expert-review')">
+          <team-outlined />
+          <span>专家评审</span>
+        </a-menu-item>
       </a-menu>
     </a-layout-sider>
     <a-layout>
@@ -38,6 +42,8 @@
 import {
   PieChartOutlined,
   UserOutlined,
+  DesktopOutlined,
+  TeamOutlined,
 } from '@ant-design/icons-vue';
 import { ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
