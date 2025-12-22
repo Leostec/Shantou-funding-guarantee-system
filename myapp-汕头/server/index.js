@@ -395,12 +395,23 @@ app.get('/xmlb', (req, res) => {
     });
 });
 
-// 新增：获取贷款申请数据
+// 新增：获取贷款申请数据（支持按项目编号或创建人过滤）
 app.get('/loan-application', (req, res) => {
-    const projectNumber = req.query.projectNumber || '';
+    const projectNumber = req.query.projectNumber;
+    const createdBy = req.query.createdBy;
 
-    const sql = `SELECT * FROM loan_application WHERE project_number = ?`;
-    const params = projectNumber;
+    let sql = '';
+    let params = [];
+
+    if (createdBy) {
+        sql = `SELECT * FROM loan_application WHERE created_by = ? ORDER BY created_at DESC`;
+        params = [createdBy];
+    } else if (projectNumber) {
+        sql = `SELECT * FROM loan_application WHERE project_number = ?`;
+        params = [projectNumber];
+    } else {
+        return res.status(400).send({ error: 'projectNumber or createdBy is required' });
+    }
 
     conn.query(sql, params, (err, results) => {
         if (err) {

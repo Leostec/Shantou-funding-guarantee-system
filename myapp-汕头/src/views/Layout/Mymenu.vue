@@ -1,43 +1,56 @@
 <template>
   <a-layout style="min-height: 100vh">
-      <a-layout-sider v-model:collapsed="collapsed" collapsible>
-          <div class="logo" />
-          <a-menu v-model:selectedKeys="selectedKeys" theme="dark" mode="inline">
-              <a-menu-item key="12" @click="$router.push('/vis')">
-                  <pie-chart-outlined />
-                  <span>小微企业贷款担保额度评估平台</span>
-              </a-menu-item>
-          </a-menu>
-      </a-layout-sider>
-      <a-layout>
-          <a-layout-header style="background: #00F5FF; padding: 0; display: flex; align-items: center; justify-content: space-between; padding-left: 16px; padding-right: 16px;">
-              <div class="title-wrap">
-                <h2 class="title">评估平台</h2>
-                <span class="welcome" v-if="username">欢迎您，{{ username }}！</span>
-              </div>
-              <a-button type="primary" danger @click="logout">退出登录</a-button>
-          </a-layout-header>
-          <a-layout-content style="margin: 0 16px">
-              <router-view/>
-          </a-layout-content>
-      </a-layout>
+    <a-layout-sider v-model:collapsed="collapsed" collapsible>
+      <div class="logo" />
+      <a-menu v-model:selectedKeys="selectedKeys" theme="dark" mode="inline">
+        <a-menu-item key="/vis" @click="$router.push('/vis')">
+          <pie-chart-outlined />
+          <span>小微企业贷款担保额度评估平台</span>
+        </a-menu-item>
+        <a-menu-item key="/my-entries" @click="$router.push('/my-entries')">
+          <user-outlined />
+          <span>我的录入</span>
+        </a-menu-item>
+      </a-menu>
+    </a-layout-sider>
+    <a-layout>
+      <a-layout-header
+        style="background: #00F5FF; padding: 0; display: flex; align-items: center; justify-content: space-between; padding-left: 16px; padding-right: 16px;"
+      >
+        <div class="title-wrap">
+          <h2 class="title">评估平台</h2>
+          <span class="welcome" v-if="username">欢迎您，{{ username }}</span>
+        </div>
+        <a-button type="primary" danger @click="logout">退出登录</a-button>
+      </a-layout-header>
+      <a-layout-content style="margin: 0 16px">
+        <router-view />
+      </a-layout-content>
+    </a-layout>
   </a-layout>
 </template>
+
 <script lang="ts" setup>
 import {
   PieChartOutlined,
-  DesktopOutlined,
   UserOutlined,
-  TeamOutlined,
-  FileOutlined,
 } from '@ant-design/icons-vue';
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { message } from 'ant-design-vue';
+
 const collapsed = ref<boolean>(false);
-const selectedKeys = ref<string[]>(['1']);
 const router = useRouter();
+const selectedKeys = ref<string[]>([router.currentRoute.value.path]);
 const username = ref<string>(localStorage.getItem('username') || '');
+
+watch(
+  () => router.currentRoute.value.path,
+  (path) => {
+    selectedKeys.value = [path];
+  },
+  { immediate: true }
+);
 
 const logout = () => {
   localStorage.removeItem('authRole');
@@ -46,6 +59,7 @@ const logout = () => {
   router.push('/');
 };
 </script>
+
 <style scoped>
 .title{
   text-align: center;

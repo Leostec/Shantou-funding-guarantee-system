@@ -421,6 +421,7 @@
           <div class="submit-section">
             <el-button type="primary" @click="saveDraft" style="margin-right: 10px;">暂存</el-button>
             <el-button type="info" @click="restoreDraft" style="margin-right: 10px;">恢复暂存</el-button>
+            <el-button type="warning" @click="saveWithoutPredict" style="margin-right: 10px;">保存</el-button>
             <el-button type="success" @click="predictContent">提交</el-button>
           </div>
         </form>
@@ -1097,6 +1098,106 @@ const insertPredictionToDatabase = async () => {
     }
   } catch (error) {
     console.error("Error inserting predictions:", error);
+  }
+};
+
+// 新增：仅保存，不调用模型
+const saveWithoutPredict = async () => {
+  try {
+    const predictedAmount = null;
+    const basicData = {
+      company_name: company_name.value,
+      date: new Date().toISOString().split("T")[0],
+      application_period: application_period.value,
+      project_manager: project_manager.value,
+      report_number: project_number.value,
+      predicted: predictedAmount,
+      expert_opinion: expert_opinion.value,
+      expert_amount: expert_amount.value,
+      created_by: localStorage.getItem("username") || "",
+    };
+
+    const detailData = {
+      project_number: project_number.value,
+      company_name: company_name.value,
+      project_manager: project_manager.value,
+      application_amount: application_amount.value,
+      application_period: application_period.value,
+      repayment_method: repayment_method.value,
+      controller_gender: controller_gender.value,
+      education_level: education_level.value,
+      marital_status: marital_status.value,
+      residence_type: residence_type.value,
+      local_residence_years: local_residence_years.value,
+      industry_category: industry_category.value,
+      industry_experience: industry_experience.value,
+      is_foreign_trade: is_foreign_trade.value,
+      is_cautious_industry: is_cautious_industry.value,
+      employee_count: employee_count.value,
+      business_premises_type: business_premises_type.value,
+      monthly_rent: monthly_rent.value,
+      monthly_balance: monthly_balance.value,
+      daily_balance: daily_balance.value,
+      electricity_consumption: electricity_consumption.value,
+      cash_at_meeting: cash_at_meeting.value,
+      receivables_at_meeting: receivables_at_meeting.value,
+      inventory_at_meeting: inventory_at_meeting.value,
+      payables_at_meeting: payables_at_meeting.value,
+      total_assets: total_assets.value,
+      total_liabilities: total_liabilities.value,
+      net_assets: net_assets.value,
+      annual_sales: annual_sales.value,
+      annual_net_profit: annual_net_profit.value,
+      monthly_net_profit: monthly_net_profit.value,
+      core_assets: core_assets.value,
+      hard_liabilities: hard_liabilities.value,
+      operating_liabilities: operating_liabilities.value,
+      sales_debt_ratio: sales_debt_ratio.value,
+      asset_debt_ratio: asset_debt_ratio.value,
+      monthly_repayment: monthly_repayment.value,
+      total_monthly_repayment: total_monthly_repayment.value,
+      repayment_income_ratio: repayment_income_ratio.value,
+      average_payment_period: average_payment_period.value,
+      family_harmony: family_harmony.value,
+      minor_children: minor_children.value,
+      adult_family_members: adult_family_members.value,
+      working_family_members: working_family_members.value,
+      credit_inquiries: credit_inquiries.value,
+      overdue_times: overdue_times.value,
+      max_overdue_amount: max_overdue_amount.value,
+      bank_inflow: bank_inflow.value,
+      bank_outflow: bank_outflow.value,
+      highest_flow_month: highest_flow_month.value,
+      lowest_flow_month: lowest_flow_month.value,
+      company_guarantee: company_guarantee.value,
+      personal_guarantee: personal_guarantee.value,
+      additional_guarantor: additional_guarantor.value,
+      property_mortgage: property_mortgage.value,
+      property_second_mortgage: property_second_mortgage.value,
+      equipment_mortgage: equipment_mortgage.value,
+      is_growth_stage: is_growth_stage.value,
+      used_youdaibao: used_youdaibao.value,
+      education_work_experience: education_work_experience.value,
+      family_social_relations: family_social_relations.value,
+      business_model: business_model.value,
+      counter_guarantee: counter_guarantee.value,
+      main_business: main_business.value,
+      profit_usage: profit_usage.value,
+      other_soft_info: other_soft_info.value,
+      loan_purpose: loan_purpose.value,
+      predicted: predictedAmount,
+      prediction_text: "",
+      expert_opinion: expert_opinion.value,
+      expert_amount: expert_amount.value,
+      created_by: localStorage.getItem("username") || "",
+    };
+
+    await axios.post("http://localhost:8989/insert-huizong", basicData);
+    await axios.post("http://localhost:8989/insert-prediction", detailData);
+    ElMessage.success("已保存，无需模型预测");
+  } catch (error) {
+    console.error("保存失败:", error);
+    ElMessage.error("保存失败，请重试");
   }
 };
 </script>
