@@ -500,6 +500,22 @@ app.put('/loan-application/:id', (req, res) => {
     });
 });
 
+// 删除贷款申请数据（按 id）
+app.delete('/loan-application/:id', async (req, res) => {
+    const id = req.params.id;
+    if (!id) {
+        return res.status(400).send({ error: 'id is required' });
+    }
+    try {
+        const sql = 'DELETE FROM loan_application WHERE id = ?';
+        await queryAsync(sql, [id]);
+        res.send({ success: true, message: 'Deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting loan_application:', error);
+        res.status(500).send({ error: error.message });
+    }
+});
+
 app.post('/datahuizong', async (req, res) => {
     try {
         const data = req.body;

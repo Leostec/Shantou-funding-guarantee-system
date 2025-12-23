@@ -29,7 +29,17 @@
     >
       <template #bodyCell="{ column, record }">
         <template v-if="column.key === 'actions'">
-          <a-button type="link" @click="openEdit(record)">编辑</a-button>
+          <a-space>
+            <a-button type="link" @click="openEdit(record)">编辑</a-button>
+            <a-popconfirm
+              title="确认删除这条记录吗？"
+              ok-text="删除"
+              cancel-text="取消"
+              @confirm="() => deleteRecord(record)"
+            >
+              <a-button type="link" danger>删除</a-button>
+            </a-popconfirm>
+          </a-space>
         </template>
       </template>
 
@@ -302,6 +312,22 @@ const submitEdit = async () => {
     message.error(error?.response?.data?.error || '更新失败');
   } finally {
     saving.value = false;
+  }
+};
+
+const deleteRecord = async (record: RecordItem) => {
+  const id = record.id || record.project_number;
+  if (!id) {
+    message.error('缺少记录ID，无法删除');
+    return;
+  }
+  try {
+    await axios.delete(`http://localhost:8989/loan-application/${id}`);
+    message.success('删除成功');
+    await fetchEntries();
+  } catch (error: any) {
+    console.error('删除失败', error);
+    message.error(error?.response?.data?.error || '删除失败');
   }
 };
 
