@@ -10,7 +10,6 @@ declare module 'vue' {
     BarChart: typeof import('./src/components/barChart.vue')['default']
     Ciyun: typeof import('./src/components/Ciyun.vue')['default']
     ElButton: typeof import('element-plus/es')['ElButton']
-    ElCard: typeof import('element-plus/es')['ElCard']
     ElForm: typeof import('element-plus/es')['ElForm']
     ElFormItem: typeof import('element-plus/es')['ElFormItem']
     ElInput: typeof import('element-plus/es')['ElInput']

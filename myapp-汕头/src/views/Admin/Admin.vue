@@ -1,110 +1,86 @@
 <template>
-  <div
-    class="zcpg"
-    style="width: 1200px;height: 800px;"
-  >
-    <div
-      class="search-container"
-      style="width: 1100px;"
-    >
+  <div class="admin-page">
+    <div class="header">
       <div>
-        <label>开始时间:</label>
-        <input
-          type="date"
-          v-model="startDate"
-          @input="fetchTableDataWithSearch"
-          style="margin-left: 20px;"
-        />
-        <span style="margin-left: 80px;"></span>
-        <label>结束时间:</label>
-        <input
-          type="date"
-          v-model="endDate"
-          @input="fetchTableDataWithSearch"
-          style="margin-left: 85px;"
-        />
-        <span style="margin-left: 80px;"></span>
-        <label>搜索借贷周期:</label>
-        <input
-          type="text"
-          v-model="searchTime"
-          @input="fetchTableDataWithSearch"
-          style="margin-left: 40px;"
-        />
+        <h2>管理员面板</h2>
+        <p class="subtitle">筛选与查看全局报告</p>
       </div>
-      <br>
-      <div>
-        <label>搜索企业名称:</label>
-        <input
-          type="text"
-          v-model="searchName"
-          @input="fetchTableDataWithSearch"
-          placeholder="Search by name"
-        />
-        <span style="margin-left: 80px;"></span>
-        <label>搜索报告编号:</label>
-        <input
-          type="text"
-          v-model="searchReportNumber"
-          @input="fetchTableDataWithSearch"
-          placeholder="Search by report number"
-        />
-        <span style="margin-left: 80px;"></span>
-        <label>搜索上传负责人:</label>
-        <input
-          type="text"
-          v-model="searchUserName"
-          @input="fetchTableDataWithSearch"
-          placeholder="Search by user name"
-        />
-      </div>
+    </div>
 
+    <div class="card filter-card">
+      <div class="filter-grid">
+        <div class="filter-item">
+          <label>开始时间</label>
+          <input type="date" v-model="startDate" @input="fetchTableDataWithSearch" />
+        </div>
+        <div class="filter-item">
+          <label>结束时间</label>
+          <input type="date" v-model="endDate" @input="fetchTableDataWithSearch" />
+        </div>
+        <div class="filter-item">
+          <label>借贷周期</label>
+          <input type="text" v-model="searchTime" @input="fetchTableDataWithSearch" placeholder="如 12" />
+        </div>
+        <div class="filter-item">
+          <label>企业名称</label>
+          <input type="text" v-model="searchName" @input="fetchTableDataWithSearch" placeholder="模糊查询" />
+        </div>
+        <div class="filter-item">
+          <label>报告编号</label>
+          <input type="text" v-model="searchReportNumber" @input="fetchTableDataWithSearch" placeholder="模糊查询" />
+        </div>
+        <div class="filter-item">
+          <label>上传负责人</label>
+          <input type="text" v-model="searchUserName" @input="fetchTableDataWithSearch" placeholder="模糊查询" />
+        </div>
+      </div>
     </div>
-    <div class="container">
-    <div class="quadrant-container">
-      <div class="quadrant quadrant1">{{ countZero }}</div>
-      <div class="quadrant-label">未通过</div>
+
+    <div class="card stats-card">
+      <div class="stat">
+        <div class="stat-label">未通过</div>
+        <div class="stat-value pink">{{ countZero }}</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">≤ 30</div>
+        <div class="stat-value green">{{ countLessThanOrEqual300 }}</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">&gt; 30</div>
+        <div class="stat-value blue">{{ countGreater300 }}</div>
+      </div>
     </div>
-    <div class="quadrant-container">
-      <div class="quadrant quadrant2">{{ countLessThanOrEqual300 }}</div>
-      <div class="quadrant-label">&le;30</div>
-    </div>
-    <div class="quadrant-container">
-      <div class="quadrant quadrant3">{{ countGreater300 }}</div>
-      <div class="quadrant-label">&gt;30</div>
-    </div>
-  </div>
-    <div class="table">
+
+    <div class="card table-card">
       <a-table
         :columns="columns"
         :data-source="tableData"
-        :scroll="{ x:'max-content',y:380 }"
+        :scroll="{ x:'max-content', y: 480 }"
+        :pagination="{ pageSize: 10 }"
       >
         <template #bodyCell="{ column, record }">
           <template v-if="column.key === 'report_number'">
-            <a
-              class="custom-link"
-              @click="viewZcpgData(record.report_number)"
-            >{{ record.report_number }}</a>
+            <a class="custom-link" @click="viewZcpgData(record.report_number)">
+              {{ record.report_number }}
+            </a>
           </template>
-          <template v-else-if="column.key === 'money'">
-            {{ record.money > 0 ? '√' : '×' }}
+          <template v-else-if="column.key === 'created_at'">
+            {{ formatDateTime(record.created_at) }}
           </template>
           <template v-else>
             {{ record[column.key] }}
           </template>
         </template>
         <template #headerCell="{ column }">
-          <span style="font-weight: bold;">{{ column.title }}</span>
+          <span class="th-bold">{{ column.title }}</span>
         </template>
       </a-table>
     </div>
   </div>
-
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import axios from "axios";
 
@@ -121,36 +97,12 @@ const countLessThanOrEqual300 = ref(0);
 const countGreater300 = ref(0);
 
 const columns = [
-  {
-    title: "企业编号",
-    dataIndex: "report_number",
-    key: "report_number",
-  },
-  {
-    title: "企业名称",
-    dataIndex: "company_name",
-    key: "company_name",
-  },
-  {
-    title: "上传日期",
-    dataIndex: "created_at",
-    key: "created_at",
-  },
-  {
-    title: "借贷周期",
-    dataIndex: "application_period",
-    key: "application_period",
-  },
-  {
-    title: "上传负责人",
-    dataIndex: "project_manager",
-    key: "project_manager",
-  },
-  {
-    title: "预测结果(万元)",
-    dataIndex: "predicted",
-    key: "predicted",
-  },
+  { title: "企业编号", dataIndex: "report_number", key: "report_number" },
+  { title: "企业名称", dataIndex: "company_name", key: "company_name" },
+  { title: "上传日期", dataIndex: "created_at", key: "created_at", customRender: ({ text }) => formatDateTime(text) },
+  { title: "借贷周期", dataIndex: "application_period", key: "application_period" },
+  { title: "上传负责人", dataIndex: "project_manager", key: "project_manager" },
+  { title: "预测结果(万元)", dataIndex: "predicted", key: "predicted" },
 ];
 
 async function fetchTableDataWithSearch() {
@@ -170,7 +122,6 @@ async function fetchTableDataWithSearch() {
     );
     tableData.value = response.data;
 
-    // 更新计数变量（使用 predicted 字段）
     countZero.value = tableData.value.filter(
       (item) => Number(item.predicted) === 0
     ).length;
@@ -184,80 +135,98 @@ async function fetchTableDataWithSearch() {
     console.error("Error fetching table data:", error);
   }
 }
+
 const viewZcpgData = (reportNumber) => {
   router.push({ name: "Zcpg", params: { reportNumber } });
 };
+
+const formatDateTime = (val) => {
+  if (!val) return "—";
+  const d = new Date(val);
+  if (Number.isNaN(d.getTime())) return val;
+  return d.toLocaleString("zh-CN", { hour12: false });
+};
+
 onMounted(() => {
   fetchTableDataWithSearch();
 });
 </script>
 
 <style scoped>
-.zcpg {
-  border: 1px solid rgb(218, 218, 218);
-  border-radius: 5px;
-  margin: 10px;
-  padding: 10px;
-  background-color: rgb(240, 240, 240);
+.admin-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px;
 }
-.search-container {
-  border: 1px solid rgb(218, 218, 218);
-  border-radius: 5px;
-  margin: 10px;
-  padding: 10px;
-  background-color: rgb(245, 245, 245);
-}
-input {
-  width: 166.11px;
-}
-.container {
+.header {
   display: flex;
+  align-items: baseline;
   justify-content: space-between;
+  margin-bottom: 12px;
 }
-
-.quadrant-container {
+.subtitle {
+  margin-top: 4px;
+  color: #666;
+}
+.card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  margin-bottom: 12px;
+}
+.filter-card {
+  margin-top: 8px;
+}
+.filter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px 16px;
+}
+.filter-item {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  gap: 6px;
 }
-.quadrant-label {
-  margin-top: 5px; 
-  font-size: 14px; 
-  color: #333; 
+.filter-item input {
+  padding: 8px 10px;
+  border: 1px solid #d9d9d9;
+  border-radius: 6px;
 }
-.quadrant {
-  width: 100px;
-  height: 80px;
+.stats-card {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+.stat {
+  padding: 12px;
+  border-radius: 10px;
+  background: #f7f9fb;
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
-  font-size: 24px; /* Adjust the font size as needed */
-  margin-right: 75px;
-  margin-left: 70px;
-  border: 1px solid black;
-  border-radius: 5px;
 }
+.stat-label {
+  color: #666;
+}
+.stat-value {
+  font-size: 26px;
+  font-weight: 700;
+}
+.pink { color: #e96d92; }
+.green { color: #52c41a; }
+.blue { color: #1890ff; }
 
+.table-card {
+  overflow: hidden;
+}
 .custom-link {
-  color: #333; /* 或者你想要的颜色代码 */
-  text-decoration: none; /* 如果你不希望有下划线，可以取消链接下划线 */
+  color: #1677ff;
 }
-
 .custom-link:hover {
-  color: #555; /* 鼠标悬停时的颜色，或者你想要的颜色代码 */
-  text-decoration: underline; /* 鼠标悬停时添加下划线 */
+  text-decoration: underline;
 }
-
-.quadrant1 {
-  background-color: #ffc0cb;
-} /* Pink */
-.quadrant2 {
-  background-color: #90ee90;
-} /* Light Green */
-.quadrant3 {
-  background-color: #add8e6;
-} /* Light Blue */
-.quadrant4 {
-  background-color: #ffd700;
-} /* Gold */
+.th-bold {
+  font-weight: 700;
+}
 </style>

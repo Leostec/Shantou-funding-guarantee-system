@@ -1,82 +1,33 @@
 <template>
-  <div id="login">
-    <div id="contain">
-      <div id="left_card"></div>
-      <div id="right_card">
-        <el-card class="el-card">
-          <h2>欢迎登录 / 注册</h2>
-          <el-tabs v-model="activeTab">
-            <el-tab-pane label="登录" name="login">
-              <el-form
-                :model="loginForm"
-                :rules="rules"
-                ref="loginFormRef"
-                @submit.prevent="login"
-              >
-                <el-form-item
-                  label="用户名"
-                  prop="username"
-                  class="login"
-                >
-                  <el-input v-model="loginForm.username"></el-input>
-                </el-form-item>
-                <el-form-item
-                  label="密码"
-                  prop="password"
-                >
-                  <el-input
-                    type="password"
-                    v-model="loginForm.password"
-                  ></el-input>
-                </el-form-item>
-              </el-form>
-              <div id="btn">
-                <el-button
-                  type="primary"
-                  @click="login"
-                  class="loginbtn"
-                >登录</el-button>
-              </div>
-            </el-tab-pane>
-            <el-tab-pane label="注册" name="register">
-              <el-form
-                :model="registerForm"
-                :rules="rules"
-                ref="registerFormRef"
-                @submit.prevent="register"
-              >
-                <el-form-item
-                  label="用户名"
-                  prop="username"
-                  class="login"
-                >
-                  <el-input v-model="registerForm.username"></el-input>
-                </el-form-item>
-                <el-form-item
-                  label="密码"
-                  prop="password"
-                >
-                  <el-input
-                    type="password"
-                    v-model="registerForm.password"
-                  ></el-input>
-                </el-form-item>
-              </el-form>
-              <div id="btn">
-                <el-button
-                  type="primary"
-                  @click="register"
-                  class="loginbtn"
-                >注册</el-button>
-              </div>
-            </el-tab-pane>
-          </el-tabs>
-          <p
-            v-if="errorMessage"
-            style="color: red"
-          >{{ errorMessage }}</p>
-        </el-card>
-      </div>
+  <div class="login-page">
+    <div class="auth-card">
+      <h2>欢迎登录 / 注册</h2>
+      <el-tabs v-model="activeTab">
+        <el-tab-pane label="登录" name="login">
+          <el-form :model="loginForm" :rules="rules" ref="loginFormRef" @submit.prevent="login">
+            <el-form-item label="用户名" prop="username">
+              <el-input v-model="loginForm.username" placeholder="请输入用户名" />
+            </el-form-item>
+            <el-form-item label="密码" prop="password">
+              <el-input v-model="loginForm.password" type="password" placeholder="请输入密码" />
+            </el-form-item>
+          </el-form>
+          <el-button type="primary" class="full-btn" @click="login">登录</el-button>
+        </el-tab-pane>
+
+        <el-tab-pane label="注册" name="register">
+          <el-form :model="registerForm" :rules="rules" ref="registerFormRef" @submit.prevent="register">
+            <el-form-item label="用户名" prop="username">
+              <el-input v-model="registerForm.username" placeholder="请输入用户名" />
+            </el-form-item>
+            <el-form-item label="密码" prop="password">
+              <el-input v-model="registerForm.password" type="password" placeholder="请输入密码" />
+            </el-form-item>
+          </el-form>
+          <el-button type="primary" class="full-btn" @click="register">注册</el-button>
+        </el-tab-pane>
+      </el-tabs>
+      <p v-if="errorMessage" class="error-text">{{ errorMessage }}</p>
     </div>
   </div>
 </template>
@@ -87,14 +38,8 @@ import axios from "axios";
 import { ElMessage } from "element-plus";
 
 const activeTab = ref("login");
-const loginForm = ref({
-  username: "",
-  password: "",
-});
-const registerForm = ref({
-  username: "",
-  password: "",
-});
+const loginForm = ref({ username: "", password: "" });
+const registerForm = ref({ username: "", password: "" });
 const errorMessage = ref("");
 const loginFormRef = ref(null);
 const registerFormRef = ref(null);
@@ -124,8 +69,7 @@ const login = () => {
       ElMessage.success("登录成功");
       handleLoginSuccess(response.data?.role);
     } catch (err) {
-      errorMessage.value =
-        err?.response?.data?.message || "登录失败，请重试";
+      errorMessage.value = err?.response?.data?.message || "登录失败，请重试";
       ElMessage.error(errorMessage.value);
     }
   });
@@ -146,86 +90,40 @@ const register = () => {
       loginForm.value.username = registerForm.value.username;
       loginForm.value.password = "";
     } catch (err) {
-      errorMessage.value =
-        err?.response?.data?.message || "注册失败，请重试";
+      errorMessage.value = err?.response?.data?.message || "注册失败，请重试";
       ElMessage.error(errorMessage.value);
     }
   });
 };
 </script>
-  <style lang="scss" scoped>
-  @keyframes animate {
-    0% {
-      filter: hue-rotate(0deg);
-    }
-    100% {
-      filter: hue-rotate(360deg);
-    }
-  }
-  #login {
-    position: relative;
-    width: 100vw;
-    height: 100vh;
-    background-size: 100% 100%;
-    background-color: #a7a8bd;
-  }
-  #contain {
-    display: flex;
-    flex-direction: row;
-    text-align: center;
-    align-items: center;
-    #left_card {
-      width: 500px;
-      h1 {
-        color: white;
-        white-space: nowrap;
-      }
-      span {
-        font-size: 1.2rem;
-        text-align: center;
-        color: white;
-        white-space: nowrap;
-      }
-    }
-    #right_card {
-      width: 400px;
-      .el-card {
-        margin: 0 45px;
-        margin-top: 200px;
-        border-radius: 25px;
-        background-color: rgba(255, 255, 255, 0.1);
-      }
-    }
-  }
-  #right_card {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    h2 {
-      margin-bottom: 5px;
-    }
-    .login {
-      input {
-        width: 80%;
-        height: 45px;
-        margin-top: 10px;
-        border: 1px solid white;
-        background-color: rgba(255, 255, 255, 0.5);
-        border-radius: 10px;
-        font-size: inherit;
-        padding-left: 20px;
-        outline: none;
-      }
-    }
-  
-    .loginbtn {
-      width: 100%;
-      height: 35px;
-      margin-top: 10px;
-      border-radius: 10px;
-      background-color: rgba(207, 38, 38, 0.8);
-    }
-  }
-  </style>
-  
-  
+
+<style lang="scss" scoped>
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #8ec5fc 0%, #e0c3fc 100%);
+  padding: 24px;
+}
+.auth-card {
+  width: 420px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+  padding: 28px 32px 24px;
+}
+.auth-card h2 {
+  text-align: center;
+  margin-bottom: 12px;
+}
+.full-btn {
+  width: 100%;
+  margin-top: 8px;
+}
+.error-text {
+  color: #f56c6c;
+  margin-top: 8px;
+  text-align: center;
+}
+</style>
