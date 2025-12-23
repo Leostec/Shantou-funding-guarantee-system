@@ -1,6 +1,11 @@
 <template>
-  <a-layout style="min-height: 100vh">
-    <a-layout-sider v-model:collapsed="collapsed" collapsible>
+  <a-layout class="root-layout">
+    <a-layout-sider
+      v-model:collapsed="collapsed"
+      collapsible
+      :width="200"
+      class="sider-fixed"
+    >
       <div class="logo" />
       <a-menu v-model:selectedKeys="selectedKeys" theme="dark" mode="inline">
         <a-menu-item key="/vis" @click="$router.push('/vis')">
@@ -21,9 +26,9 @@
         </a-menu-item>
       </a-menu>
     </a-layout-sider>
-    <a-layout>
+    <a-layout class="main-layout">
       <a-layout-header
-        style="background: #00F5FF; padding: 0; display: flex; align-items: center; justify-content: space-between; padding-left: 16px; padding-right: 16px;"
+        class="main-header"
       >
         <div class="title-wrap">
           <h2 class="title">评估平台</h2>
@@ -31,7 +36,7 @@
         </div>
         <a-button type="primary" danger @click="logout">退出登录</a-button>
       </a-layout-header>
-      <a-layout-content style="margin: 0 16px">
+      <a-layout-content class="main-content">
         <router-view />
       </a-layout-content>
     </a-layout>
@@ -73,6 +78,39 @@ const logout = () => {
 <style scoped>
 .title{
   text-align: center;
+}
+.root-layout {
+  min-height: 100vh;
+}
+.sider-fixed {
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+}
+.main-layout {
+  margin-left: 200px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #f5f5f5;
+}
+.main-header {
+  background: #00F5FF;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.main-content {
+  margin: 0 16px;
+  padding: 16px 0;
+  flex: 1;
+  overflow: auto;
 }
 .title-wrap {
   display: flex;

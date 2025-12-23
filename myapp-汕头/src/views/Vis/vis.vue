@@ -1171,6 +1171,7 @@ const saveWithoutPredict = async () => {
     await axios.post("http://localhost:8989/insert-huizong", basicData);
     await axios.post("http://localhost:8989/insert-prediction", detailData);
     ElMessage.success("已保存，无需模型预测");
+    window.location.reload();
   } catch (error) {
     console.error("保存失败:", error);
     ElMessage.error("保存失败，请重试");
