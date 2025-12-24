@@ -60,6 +60,7 @@ const loginFormRef = ref(null);
 const registerFormRef = ref(null);
 const deptOptions = ref([]);
 const deptLoading = ref(false);
+const loginResponse = ref({});
 
 const rules = {
   username: [{ required: true, message: "请输入用户名", trigger: "blur" }],
@@ -70,6 +71,10 @@ const rules = {
 const handleLoginSuccess = (role = "user") => {
   localStorage.setItem("username", loginForm.value.username);
   localStorage.setItem("authRole", role || "user");
+  // 部门名在登录成功后写入（如果有）
+  if (loginResponse.value?.department_name !== undefined) {
+    localStorage.setItem("department_name", loginResponse.value.department_name || "");
+  }
   const target = role === "admin" ? "/admin" : "/vis";
   window.location.href = `http://localhost:8080${target}`;
 };
@@ -84,6 +89,7 @@ const login = () => {
         username: loginForm.value.username,
         password: loginForm.value.password,
       });
+      loginResponse.value = response.data || {};
       ElMessage.success("登录成功");
       handleLoginSuccess(response.data?.role);
     } catch (err) {

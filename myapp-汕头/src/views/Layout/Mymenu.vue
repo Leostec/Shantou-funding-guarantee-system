@@ -32,7 +32,7 @@
       >
         <div class="title-wrap">
           <h2 class="title">评估平台</h2>
-          <span class="welcome" v-if="username">欢迎您，{{ username }}</span>
+          <span class="welcome" v-if="username">欢迎您，{{ department || '未分配部门' }}的{{ username }}</span>
         </div>
         <a-button type="primary" danger @click="logout">退出登录</a-button>
       </a-layout-header>
@@ -58,6 +58,7 @@ const collapsed = ref<boolean>(false);
 const router = useRouter();
 const selectedKeys = ref<string[]>([router.currentRoute.value.path]);
 const username = ref<string>(localStorage.getItem('username') || '');
+const department = ref<string>(localStorage.getItem('department_name') || '');
 
 watch(
   () => router.currentRoute.value.path,

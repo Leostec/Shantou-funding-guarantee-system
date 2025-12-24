@@ -108,6 +108,9 @@
           <template v-else-if="column.key === 'created_at'">
             {{ formatDateTime(record.created_at) }}
           </template>
+          <template v-else-if="column.key === 'manager_id'">
+            {{ userMap[record.manager_id] || record.manager_id }}
+          </template>
           <template v-else>
             {{ record[column.key] }}
           </template>
@@ -127,7 +130,7 @@
         <a-form-item label="部门名称">
           <a-input v-model:value="deptForm.name" placeholder="请输入部门名称" />
         </a-form-item>
-        <a-form-item label="负责人ID">
+        <a-form-item label="负责人">
           <a-select
             v-model:value="deptForm.manager_id"
             show-search
@@ -142,7 +145,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import axios from "axios";
 import { message } from "ant-design-vue";
@@ -168,7 +171,7 @@ const countGreater300 = ref(0);
 const columns = [
   { title: "企业编号", dataIndex: "report_number", key: "report_number" },
   { title: "企业名称", dataIndex: "company_name", key: "company_name" },
-  { title: "上传日期", dataIndex: "created_at", key: "created_at", customRender: ({ text }) => formatDateTime(text) },
+  { title: "上传日期", dataIndex: "created_at", key: "created_at" },
   { title: "借贷周期", dataIndex: "application_period", key: "application_period" },
   { title: "上传负责人", dataIndex: "project_manager", key: "project_manager" },
   { title: "预测结果(万元)", dataIndex: "predicted", key: "predicted" },
@@ -218,10 +221,18 @@ const formatDateTime = (val) => {
 
 const deptColumns = [
   { title: "部门名称", dataIndex: "name", key: "name" },
-  { title: "负责人ID", dataIndex: "manager_id", key: "manager_id" },
+  { title: "负责人", dataIndex: "manager_id", key: "manager_id" },
   { title: "创建时间", dataIndex: "created_at", key: "created_at" },
   { title: "操作", key: "actions" },
 ];
+
+const userMap = computed(() => {
+  const map = {};
+  userOptions.value.forEach((u) => {
+    map[u.value] = u.label;
+  });
+  return map;
+});
 
 const fetchUsers = async () => {
   try {
@@ -258,7 +269,7 @@ const openDeptModal = (mode, record = null) => {
 
 const submitDept = async () => {
   if (!deptForm.value.name || !deptForm.value.manager_id) {
-    message.warning("请填写部门名称和负责人ID");
+    message.warning("请填写部门名称和负责人");
     return;
   }
   deptSaving.value = true;
@@ -380,5 +391,11 @@ onMounted(() => {
 }
 .th-bold {
   font-weight: 700;
+}
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
 }
 </style>

@@ -179,7 +179,7 @@ def login_user():
         with get_db_connection() as conn:
             with conn.cursor() as cursor:
                 cursor.execute(
-                    "SELECT id, password_hash, role FROM users WHERE username = %s",
+                    "SELECT id, password_hash, role, department_id FROM users WHERE username = %s",
                     (username,),
                 )
                 user = cursor.fetchone()
@@ -193,7 +193,19 @@ def login_user():
                 conn.commit()
             user["role"] = "admin"
 
-        return jsonify({"message": "登录成功", "role": user.get("role", "user")})
+        # 获取部门名称
+        dept_name = None
+        try:
+            with get_db_connection() as conn:
+                with conn.cursor() as cursor:
+                    cursor.execute("SELECT name FROM departments WHERE id = %s", (user.get("department_id"),))
+                    dept = cursor.fetchone()
+                    if dept:
+                        dept_name = dept.get("name")
+        except Exception as e:
+            logger.error(f"Failed to fetch department name: {e}")
+
+        return jsonify({"message": "登录成功", "role": user.get("role", "user"), "department_name": dept_name})
     except Exception as e:
         logger.error(f"Login error: {e}")
         return jsonify({"message": "登录失败"}), 500
