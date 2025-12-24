@@ -1,6 +1,11 @@
 <template>
   <div class="form-container">
-    <h2 style="text-align: center; font-weight: bold">小微企业贷款担保额度评估平台</h2>
+    <div class="page-header">
+      <div>
+        <h2>信息录入</h2>
+        <p class="subtitle">企业多维信息保存</p>
+      </div>
+    </div>
     <div class="main-content">
       <!-- 左侧输入表单 -->
       <div class="input-section">

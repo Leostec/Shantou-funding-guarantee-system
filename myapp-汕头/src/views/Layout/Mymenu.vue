@@ -31,7 +31,6 @@
         class="main-header"
       >
         <div class="title-wrap">
-          <h2 class="title">评估平台</h2>
           <span class="welcome" v-if="username">欢迎您，{{ department || '未分配部门' }}的{{ username }}</span>
         </div>
         <a-button type="primary" danger @click="logout">退出登录</a-button>
@@ -98,7 +97,7 @@ const logout = () => {
   background: #f5f5f5;
 }
 .main-header {
-  background: #00F5FF;
+  background: #ffffff;
   padding: 0 16px;
   display: flex;
   align-items: center;
@@ -118,8 +117,12 @@ const logout = () => {
   align-items: center;
   gap: 16px;
 }
+.title,
 .welcome {
-  font-size: 1.5em;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.2;
+  margin: 0;
   color: #000;
 }
 
