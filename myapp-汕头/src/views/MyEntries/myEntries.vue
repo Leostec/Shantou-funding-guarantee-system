@@ -322,7 +322,7 @@ const deleteRecord = async (record: RecordItem) => {
     return;
   }
   try {
-    await axios.delete(`http://localhost:8989/loan-application/${id}`);
+    await axios.delete(`http://localhost:8989/loan-application-with-summary/${id}`);
     message.success('删除成功');
     await fetchEntries();
   } catch (error: any) {

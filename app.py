@@ -132,6 +132,15 @@ def register_user():
     data = request.get_json() or {}
     username = data.get('username', '').strip()
     password = data.get('password', '').strip()
+    department_id = data.get('department_id')
+    # 允许空部门，若有值转为 int
+    if department_id not in (None, ''):
+        try:
+            department_id = int(department_id)
+        except (TypeError, ValueError):
+            return jsonify({"message": "部门参数不合法"}), 400
+    else:
+        department_id = None
 
     if not username or not password:
         return jsonify({"message": "用户名和密码不能为空"}), 400
@@ -148,8 +157,8 @@ def register_user():
                 # 使用 werkzeug PBKDF2-SHA256 生成哈希，避免 bcrypt 72 字节限制
                 password_hash = generate_password_hash(password)
                 cursor.execute(
-                    "INSERT INTO users (username, password_hash, role) VALUES (%s, %s, %s)",
-                    (username, password_hash, "user"),
+                    "INSERT INTO users (username, password_hash, role, department_id) VALUES (%s, %s, %s, %s)",
+                    (username, password_hash, "user", department_id),
                 )
             conn.commit()
         return jsonify({"message": "注册成功", "role": "user"}), 201

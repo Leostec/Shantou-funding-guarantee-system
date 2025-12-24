@@ -1,8 +1,9 @@
-const mysql = require('mysql')
-const util = require('util')
-const express = require('express')
-const app = express()
-const cors = require('cors')
+const mysql = require('mysql');
+const util = require('util');
+const express = require('express');
+const cors = require('cors');
+
+const app = express();
 
 const conn = mysql.createConnection({
     host: 'localhost',
@@ -12,12 +13,12 @@ const conn = mysql.createConnection({
     database: 'airport',
     charset: 'utf8mb4',
     collation: 'utf8mb4_unicode_ci'
-})
+});
 
 // promisify query for async/await
-const queryAsync = util.promisify(conn.query).bind(conn)
+const queryAsync = util.promisify(conn.query).bind(conn);
 
-// 创建新的数据表
+// 建表：loan_application
 const createTableSQL = `
 CREATE TABLE IF NOT EXISTS loan_application (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -96,7 +97,7 @@ CREATE TABLE IF NOT EXISTS loan_application (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 )`;
 
-// 创建汇总表
+// 建表：datahuizong
 const createHuizongTableSQL = `
 CREATE TABLE IF NOT EXISTS datahuizong (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -112,36 +113,33 @@ CREATE TABLE IF NOT EXISTS datahuizong (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 )`;
 
-conn.query(createTableSQL, (err, results) => {
+conn.query(createTableSQL, (err) => {
     if (err) {
-        console.error('创建loan_application表失败:', err);
+        console.error('创建 loan_application 表失败:', err);
     } else {
-        console.log('loan_application表创建成功或已存在');
+        console.log('loan_application 表创建成功或已存在');
     }
 });
 
-conn.query(createHuizongTableSQL, (err, results) => {
+conn.query(createHuizongTableSQL, (err) => {
     if (err) {
-        console.error('创建datahuizong表失败:', err);
+        console.error('创建 datahuizong 表失败:', err);
     } else {
-        console.log('datahuizong表创建成功或已存在');
+        console.log('datahuizong 表创建成功或已存在');
     }
 });
 
-app.use(cors())
-// 解析文本
-app.use(express.json())
-app.use(express.urlencoded({ extended: true }))
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
+// insert huizong
 app.post('/insert-huizong', async (req, res) => {
     try {
         const data = req.body;
-        console.log('接收到的汇总数据:', data);
-
         const sql = `INSERT INTO datahuizong(
             company_name, date, application_period, project_manager, report_number, predicted, expert_opinion, expert_amount, created_by
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-        
         const values = [
             data.company_name,
             data.date,
@@ -153,14 +151,12 @@ app.post('/insert-huizong', async (req, res) => {
             data.expert_amount || null,
             data.created_by || null
         ];
-        
         conn.query(sql, values, (err, results) => {
             if (err) {
                 console.error("插入错误", err);
                 res.status(500).send("插入错误");
                 return;
             }
-            console.log(`插入ID: ${results.insertId}`);
             res.status(200).send("插入成功");
         });
     } catch (error) {
@@ -169,20 +165,18 @@ app.post('/insert-huizong', async (req, res) => {
     }
 });
 
+// insert prediction bulk (legacy)
 app.post('/insert-prediction1', async (req, res) => {
     try {
-        const predictions = req.body; // 假设前端发送的是一个预测对象的数组
-        console.log('predictions:', predictions);
-
+        const predictions = req.body;
         for (const prediction of predictions) {
             const sql = `INSERT INTO sthz(
                 name, sales_debt_ratio, asset_debt_ratio, annual_inflow, annual_outflow, sales_income, net_profit, annual_net_income, 
                 monthly_balance, accounts_receivable, total_assets, total_liabilities, net_assets, business_loan, 
                 monthly_repayment_vs_income, counter_guarantee, business_model, credit_inquiries, credit_overdue, education_work_experience, 
-                family_social_relations, microloan_product_service, application_amount, application_period, determined_amount,report_number, predicted
+                family_social_relations, microloan_product_service, application_amount, application_period, determined_amount, report_number, predicted
               ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-              
-              const values = [
+            const values = [
                 prediction.qiye_name,
                 prediction.sales_debt_ratio,
                 prediction.asset_debt_ratio,
@@ -210,20 +204,13 @@ app.post('/insert-prediction1', async (req, res) => {
                 prediction.determined_amount,
                 prediction.report_number,
                 prediction.predicted,
-              ];
-              
-            console.log(values)
-            // 执行 SQL 插入语句
-            conn.query(sql, values, (err, results) => {
+            ];
+            conn.query(sql, values, (err) => {
                 if (err) {
                     console.error("插入错误", err);
-                    res.status(500).send("插入错误");
-                    return;
                 }
-                console.log(`插入ID: ${prediction.id}`);
             });
         }
-
         res.status(200).send("插入成功");
     } catch (error) {
         console.error("插入出错", error);
@@ -231,22 +218,17 @@ app.post('/insert-prediction1', async (req, res) => {
     }
 });
 
-// 新增：插入贷款申请数据
+// 插入 loan_application
 app.post('/insert-prediction', async (req, res) => {
     try {
         const prediction = req.body;
-        console.log('接收到的预测数据:', JSON.stringify(prediction, null, 2));
-
         if (!prediction) {
-            console.error('没有接收到数据');
             return res.status(400).json({ error: 'No data received' });
         }
 
-        // 验证必要字段
         const requiredFields = ['project_number', 'company_name', 'project_manager'];
         const missingFields = requiredFields.filter(field => !prediction[field]);
         if (missingFields.length > 0) {
-            console.error('缺少必要字段:', missingFields);
             return res.status(400).json({ error: `Missing required fields: ${missingFields.join(', ')}` });
         }
 
@@ -271,7 +253,6 @@ app.post('/insert-prediction', async (req, res) => {
         ];
 
         const sql = `INSERT INTO loan_application (${columns.join(', ')}) VALUES (${columns.map(() => '?').join(', ')})`;
-
         const values = columns.map((key) => {
             if (key === 'expert_opinion') return prediction.expert_opinion || null;
             if (key === 'expert_amount') return prediction.expert_amount || null;
@@ -280,129 +261,59 @@ app.post('/insert-prediction', async (req, res) => {
         });
 
         const result = await queryAsync(sql, values);
-        console.log('Insert result:', result);
-
-        res.json({ 
-            success: true, 
-            message: 'Data inserted successfully',
-            insertId: result.insertId 
-        });
+        res.json({ success: true, message: 'Data inserted successfully', insertId: result.insertId });
     } catch (error) {
         console.error('Error inserting prediction:', error);
-        res.status(500).json({ 
-            error: 'Failed to insert data',
-            details: error.message 
-        });
+        res.status(500).json({ error: 'Failed to insert data', details: error.message });
     }
 });
 
+// sthz query
 app.get('/sthz', (req, res) => {
-    // 从请求参数中获取name值
     const name = req.query.name || '';
-
-    // 构建SQL查询语句，使用参数化查询
     const sql = `SELECT * FROM sthz WHERE report_number = ?`;
-    const params = name;
-
-    // 执行SQL查询
-    conn.query(sql, params, (err, results) => {
-        if (err) {
-            // 如果查询出错，返回错误响应
-            res.status(500).send({ error: err.message });
-        } else {
-            // 如果查询成功，返回查询结果
-            res.send(results);
-        }
-    });
-});
-
-app.get('/datahuizong', (req, res) => {
-    const reportNumber = req.query.name || '';
-
-    const sql = `SELECT * FROM datahuizong WHERE report_number = ?`;
-    const params = reportNumber;
-
-    conn.query(sql, params, (err, results) => {
-        if (err) {
-            res.status(500).send({ error: err.message });
-        } else {
-            res.send(results);
-        }
-    });
-});
-
-app.get('/xmlb', (req, res) => {
-    const searchName = req.query.searchName;
-    const searchReportNumber = req.query.searchReportNumber;
-    const searchUserName = req.query.searchUserName;
-    const startDate = req.query.startDate;
-    const endDate = req.query.endDate;
-    const searchTime = req.query.searchTime; // 新增：获取time字段的查询参数
-
-    let sql = `SELECT * FROM datahuizong`;
-    let searchParams = [];
-
-    // 构建查询条件
-    let hasConditions = false;
-
-    if (searchName || searchReportNumber || searchUserName || startDate || endDate || searchTime) {
-        sql += ` WHERE`;
-        if (searchName) {
-            sql += ` company_name LIKE ?`;
-            searchParams.push(`%${searchName}%`);
-            hasConditions = true;
-        }
-        if (searchReportNumber) {
-            if (hasConditions) sql += ` AND`;
-            sql += ` report_number LIKE ?`;
-            searchParams.push(`%${searchReportNumber}%`);
-            hasConditions = true;
-        }
-        if (searchUserName) {
-            if (hasConditions) sql += ` AND`;
-            sql += ` project_manager LIKE ?`;
-            searchParams.push(`%${searchUserName}%`);
-            hasConditions = true;
-        }
-        if (startDate || endDate) {
-            if (hasConditions) sql += ` AND`;
-            if (startDate && endDate) {
-                sql += ` date BETWEEN ? AND ?`;
-                searchParams.push(startDate);
-                searchParams.push(endDate);
-            } else if (startDate) {
-                sql += ` date >= ?`;
-                searchParams.push(startDate);
-            } else if (endDate) {
-                sql += ` date <= ?`;
-                searchParams.push(endDate);
-            }
-            hasConditions = true;
-        }
-        if (searchTime) {
-            if (hasConditions) sql += ` AND`;
-            sql += ` application_period = ?`;
-            searchParams.push(searchTime);
-        }
-    }
-
-    conn.query(sql, searchParams, (err, results) => {
-        if (err) {
-            console.error('Error executing query:', err);
-            return res.status(500).send('Error executing query');
-        }
+    conn.query(sql, name, (err, results) => {
+        if (err) return res.status(500).send({ error: err.message });
         res.send(results);
     });
 });
 
-// 新增：获取贷款申请数据（支持按项目编号或创建人过滤）
+// datahuizong query
+app.get('/datahuizong', (req, res) => {
+    const reportNumber = req.query.name || '';
+    const sql = `SELECT * FROM datahuizong WHERE report_number = ?`;
+    conn.query(sql, reportNumber, (err, results) => {
+        if (err) return res.status(500).send({ error: err.message });
+        res.send(results);
+    });
+});
+
+// 汇总列表带筛选
+app.get('/xmlb', (req, res) => {
+    const { searchName, searchReportNumber, searchUserName, startDate, endDate, searchTime } = req.query;
+    let sql = `SELECT * FROM datahuizong`;
+    const params = [];
+    const conds = [];
+    if (searchName) { conds.push(`company_name LIKE ?`); params.push(`%${searchName}%`); }
+    if (searchReportNumber) { conds.push(`report_number LIKE ?`); params.push(`%${searchReportNumber}%`); }
+    if (searchUserName) { conds.push(`project_manager LIKE ?`); params.push(`%${searchUserName}%`); }
+    if (startDate && endDate) { conds.push(`date BETWEEN ? AND ?`); params.push(startDate, endDate); }
+    else if (startDate) { conds.push(`date >= ?`); params.push(startDate); }
+    else if (endDate) { conds.push(`date <= ?`); params.push(endDate); }
+    if (searchTime) { conds.push(`application_period = ?`); params.push(searchTime); }
+    if (conds.length) sql += ' WHERE ' + conds.join(' AND ');
+    conn.query(sql, params, (err, results) => {
+        if (err) return res.status(500).send({ error: err.message });
+        res.send(results);
+    });
+});
+
+// 获取贷款申请数据（按项目编号或创建人）
 app.get('/loan-application', (req, res) => {
     const projectNumber = req.query.projectNumber;
     const createdBy = req.query.createdBy;
-
     let sql = '';
     let params = [];
-
     if (createdBy) {
         sql = `SELECT * FROM loan_application WHERE created_by = ? ORDER BY created_at DESC`;
         params = [createdBy];
@@ -412,13 +323,9 @@ app.get('/loan-application', (req, res) => {
     } else {
         return res.status(400).send({ error: 'projectNumber or createdBy is required' });
     }
-
     conn.query(sql, params, (err, results) => {
-        if (err) {
-            res.status(500).send({ error: err.message });
-        } else {
-            res.send(results);
-        }
+        if (err) return res.status(500).send({ error: err.message });
+        res.send(results);
     });
 });
 
@@ -426,10 +333,7 @@ app.get('/loan-application', (req, res) => {
 app.put('/loan-application/:id', (req, res) => {
     const id = req.params.id;
     const data = req.body || {};
-
-    if (!id) {
-        return res.status(400).send({ error: 'id is required' });
-    }
+    if (!id) return res.status(400).send({ error: 'id is required' });
 
     const updatableColumns = [
         'project_number', 'company_name', 'project_manager', 'application_amount', 'application_period',
@@ -462,13 +366,11 @@ app.put('/loan-application/:id', (req, res) => {
 
     const sql = `UPDATE loan_application SET ${setClause} WHERE id = ?`;
 
-    conn.query(sql, values, (err, result) => {
+    conn.query(sql, values, (err) => {
         if (err) {
             console.error('Error updating loan_application:', err);
             return res.status(500).send({ error: err.message });
         }
-
-        // 同步更新 datahuizong（以 project_number 作为 report_number）
         if (data.project_number) {
             const updateHuizongSql = `
                 UPDATE datahuizong 
@@ -485,11 +387,8 @@ app.put('/loan-application/:id', (req, res) => {
                 data.created_by || null,
                 data.project_number
             ];
-
             conn.query(updateHuizongSql, huizongValues, (err2) => {
                 if (err2) {
-                    console.error('Error updating datahuizong:', err2);
-                    // 不阻断主表更新结果，返回警告
                     return res.send({ success: true, message: 'loan_application updated, but failed to update datahuizong', warning: err2.message });
                 }
                 return res.send({ success: true, message: 'Updated successfully' });
@@ -500,15 +399,22 @@ app.put('/loan-application/:id', (req, res) => {
     });
 });
 
-// 删除贷款申请数据（按 id）
-app.delete('/loan-application/:id', async (req, res) => {
+// 删除贷款申请数据（按 id），同时删除 datahuizong 记录
+app.delete('/loan-application-with-summary/:id', async (req, res) => {
     const id = req.params.id;
     if (!id) {
         return res.status(400).send({ error: 'id is required' });
     }
     try {
-        const sql = 'DELETE FROM loan_application WHERE id = ?';
-        await queryAsync(sql, [id]);
+        const rows = await queryAsync('SELECT project_number FROM loan_application WHERE id = ?', [id]);
+        if (!rows || rows.length === 0) {
+            return res.status(404).send({ error: 'Record not found' });
+        }
+        const projectNumber = rows[0].project_number;
+        await queryAsync('DELETE FROM loan_application WHERE id = ?', [id]);
+        if (projectNumber) {
+            await queryAsync('DELETE FROM datahuizong WHERE report_number = ?', [projectNumber]);
+        }
         res.send({ success: true, message: 'Deleted successfully' });
     } catch (error) {
         console.error('Error deleting loan_application:', error);
@@ -516,11 +422,10 @@ app.delete('/loan-application/:id', async (req, res) => {
     }
 });
 
+// datahuizong insert (duplicate safe)
 app.post('/datahuizong', async (req, res) => {
     try {
         const data = req.body;
-        console.log('接收到的汇总数据:', data);
-
         const sql = `INSERT INTO datahuizong(
             company_name, date, application_period, project_manager, report_number, predicted, expert_opinion, expert_amount, created_by
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
@@ -537,7 +442,7 @@ app.post('/datahuizong', async (req, res) => {
             data.created_by || null
         ];
 
-        conn.query(sql, values, (err, result) => {
+        conn.query(sql, values, (err) => {
             if (err) {
                 console.error('插入错误', err);
                 res.status(500).json({ error: err.message });
@@ -546,11 +451,80 @@ app.post('/datahuizong', async (req, res) => {
             res.json({ success: true, message: 'Data inserted successfully' });
         });
     } catch (error) {
-        console.error('处理请求时出错:', error);
+        console.error('处理请求时出错', error);
         res.status(500).json({ error: error.message });
     }
 });
 
+// 用户列表（用于选择部门负责人）
+app.get('/users', async (req, res) => {
+    try {
+        const rows = await queryAsync('SELECT id, username FROM users ORDER BY id DESC');
+        res.send(rows);
+    } catch (error) {
+        console.error('Error fetching users:', error);
+        res.status(500).send({ error: error.message });
+    }
+});
+
+// 部门管理
+app.get('/departments', async (req, res) => {
+    try {
+        const rows = await queryAsync('SELECT * FROM departments ORDER BY id DESC');
+        res.send(rows);
+    } catch (error) {
+        console.error('Error fetching departments:', error);
+        res.status(500).send({ error: error.message });
+    }
+});
+
+app.post('/departments', async (req, res) => {
+    const { name, manager_id } = req.body || {};
+    if (!name) return res.status(400).send({ error: 'name is required' });
+    if (!manager_id) return res.status(400).send({ error: 'manager_id is required' });
+    try {
+        const result = await queryAsync('INSERT INTO departments (name, manager_id) VALUES (?, ?)', [name, manager_id]);
+        res.send({ success: true, id: result.insertId });
+    } catch (error) {
+        console.error('Error creating department:', error);
+        res.status(500).send({ error: error.message });
+    }
+});
+
+app.put('/departments/:id', async (req, res) => {
+    const id = req.params.id;
+    const { name, manager_id } = req.body || {};
+    
+    if (!id) return res.status(400).send({ error: 'id is required' });
+    const updates = [];
+    const params = [];
+    if (name) { updates.push('name = ?'); params.push(name); }
+    if (manager_id) { updates.push('manager_id = ?'); params.push(manager_id); }
+    if (updates.length === 0) return res.status(400).send({ error: 'No fields to update' });
+    params.push(id);
+    try {
+        await queryAsync(`UPDATE departments SET ${updates.join(', ')} WHERE id = ?`, params);
+        res.send({ success: true });
+    } catch (error) {
+        console.error('Error updating department:', error);
+        res.status(500).send({ error: error.message });
+    }
+});
+
+app.delete('/departments/:id', async (req, res) => {
+    const id = req.params.id;
+    if (!id) return res.status(400).send({ error: 'id is required' });
+    try {
+        await queryAsync('UPDATE users SET department_id = NULL WHERE department_id = ?', [id]);
+        await queryAsync('DELETE FROM departments WHERE id = ?', [id]);
+        res.send({ success: true });
+    } catch (error) {
+        console.error('Error deleting department:', error);
+        res.status(500).send({ error: error.message });
+    }
+});
+
 app.listen(8989, () => {
-    console.log('启动成功')
-})
+    console.log('启动成功');
+});
+

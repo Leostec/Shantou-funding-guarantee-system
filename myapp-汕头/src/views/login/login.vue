@@ -23,6 +23,21 @@
             <el-form-item label="密码" prop="password">
               <el-input v-model="registerForm.password" type="password" placeholder="请输入密码" />
             </el-form-item>
+            <el-form-item label="所属部门" prop="department_id">
+              <el-select
+                v-model="registerForm.department_id"
+                placeholder="请选择所属部门"
+                filterable
+                :loading="deptLoading"
+              >
+                <el-option
+                  v-for="dept in deptOptions"
+                  :key="dept.id"
+                  :label="dept.name"
+                  :value="dept.id"
+                />
+              </el-select>
+            </el-form-item>
           </el-form>
           <el-button type="primary" class="full-btn" @click="register">注册</el-button>
         </el-tab-pane>
@@ -39,14 +54,17 @@ import { ElMessage } from "element-plus";
 
 const activeTab = ref("login");
 const loginForm = ref({ username: "", password: "" });
-const registerForm = ref({ username: "", password: "" });
+const registerForm = ref({ username: "", password: "", department_id: null });
 const errorMessage = ref("");
 const loginFormRef = ref(null);
 const registerFormRef = ref(null);
+const deptOptions = ref([]);
+const deptLoading = ref(false);
 
 const rules = {
   username: [{ required: true, message: "请输入用户名", trigger: "blur" }],
   password: [{ required: true, message: "请输入密码", trigger: "blur" }],
+  department_id: [{ required: true, message: "请选择所属部门", trigger: "change" }],
 };
 
 const handleLoginSuccess = (role = "user") => {
@@ -84,6 +102,7 @@ const register = () => {
       await axios.post("http://127.0.0.1:5000/register", {
         username: registerForm.value.username,
         password: registerForm.value.password,
+        department_id: registerForm.value.department_id,
       });
       ElMessage.success("注册成功，请使用新账号登录");
       activeTab.value = "login";
@@ -95,6 +114,21 @@ const register = () => {
     }
   });
 };
+
+const fetchDepartments = async () => {
+  deptLoading.value = true;
+  try {
+    const resp = await axios.get("http://localhost:8989/departments");
+    deptOptions.value = resp.data || [];
+  } catch (err) {
+    console.error("获取部门列表失败", err);
+    errorMessage.value = err?.response?.data?.error || "获取部门列表失败";
+  } finally {
+    deptLoading.value = false;
+  }
+};
+
+fetchDepartments();
 </script>
 
 <style lang="scss" scoped>

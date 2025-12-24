@@ -76,6 +76,68 @@
         </template>
       </a-table>
     </div>
+
+    <div class="card table-card">
+      <div class="card-header">
+        <div>
+          <h3>部门管理</h3>
+          <p class="subtitle">查看和维护部门与负责人</p>
+        </div>
+        <a-button type="primary" @click="openDeptModal('create')">新建部门</a-button>
+      </div>
+      <a-table
+        :columns="deptColumns"
+        :data-source="departments"
+        :pagination="{ pageSize: 10 }"
+        row-key="id"
+      >
+        <template #bodyCell="{ column, record }">
+          <template v-if="column.key === 'actions'">
+            <a-space>
+              <a-button type="link" @click="openDeptModal('edit', record)">编辑</a-button>
+              <a-popconfirm
+                title="确认删除该部门？"
+                ok-text="删除"
+                cancel-text="取消"
+                @confirm="() => deleteDept(record)"
+              >
+                <a-button type="link" danger>删除</a-button>
+              </a-popconfirm>
+            </a-space>
+          </template>
+          <template v-else-if="column.key === 'created_at'">
+            {{ formatDateTime(record.created_at) }}
+          </template>
+          <template v-else>
+            {{ record[column.key] }}
+          </template>
+        </template>
+      </a-table>
+    </div>
+
+    <a-modal
+      v-model:visible="deptModalVisible"
+      :title="deptMode === 'edit' ? '编辑部门' : '新建部门'"
+      ok-text="保存"
+      cancel-text="取消"
+      :confirm-loading="deptSaving"
+      @ok="submitDept"
+    >
+      <a-form layout="vertical">
+        <a-form-item label="部门名称">
+          <a-input v-model:value="deptForm.name" placeholder="请输入部门名称" />
+        </a-form-item>
+        <a-form-item label="负责人ID">
+          <a-select
+            v-model:value="deptForm.manager_id"
+            show-search
+            :options="userOptions"
+            option-filter-prop="label"
+            placeholder="请选择负责人"
+          />
+        </a-form-item>
+      </a-form>
+    </a-modal>
   </div>
 </template>
 
@@ -83,14 +145,21 @@
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import axios from "axios";
+import { message } from "ant-design-vue";
 
 const tableData = ref([]);
+const departments = ref([]);
 const searchName = ref("");
 const searchReportNumber = ref("");
 const searchUserName = ref("");
 const startDate = ref("");
 const endDate = ref("");
 const searchTime = ref("");
+const deptModalVisible = ref(false);
+const deptSaving = ref(false);
+const deptForm = ref({ id: null, name: "", manager_id: null });
+const deptMode = ref("create");
+const userOptions = ref([]);
 const router = useRouter();
 const countZero = ref(0);
 const countLessThanOrEqual300 = ref(0);
@@ -147,8 +216,91 @@ const formatDateTime = (val) => {
   return d.toLocaleString("zh-CN", { hour12: false });
 };
 
+const deptColumns = [
+  { title: "部门名称", dataIndex: "name", key: "name" },
+  { title: "负责人ID", dataIndex: "manager_id", key: "manager_id" },
+  { title: "创建时间", dataIndex: "created_at", key: "created_at" },
+  { title: "操作", key: "actions" },
+];
+
+const fetchUsers = async () => {
+  try {
+    const resp = await axios.get("http://localhost:8989/users");
+    userOptions.value = (resp.data || []).map((u) => ({
+      label: u.username,
+      value: u.id,
+    }));
+  } catch (e) {
+    console.error("获取用户失败", e);
+    message.error(e?.response?.data?.error || "获取用户失败");
+  }
+};
+
+const fetchDepartments = async () => {
+  try {
+    const resp = await axios.get("http://localhost:8989/departments");
+    departments.value = resp.data || [];
+  } catch (e) {
+    console.error("获取部门失败", e);
+    message.error(e?.response?.data?.error || "获取部门失败");
+  }
+};
+
+const openDeptModal = (mode, record = null) => {
+  deptMode.value = mode;
+  if (mode === "edit" && record) {
+    deptForm.value = { id: record.id, name: record.name, manager_id: record.manager_id };
+  } else {
+    deptForm.value = { id: null, name: "", manager_id: null };
+  }
+  deptModalVisible.value = true;
+};
+
+const submitDept = async () => {
+  if (!deptForm.value.name || !deptForm.value.manager_id) {
+    message.warning("请填写部门名称和负责人ID");
+    return;
+  }
+  deptSaving.value = true;
+  try {
+    if (deptMode.value === "edit" && deptForm.value.id) {
+      await axios.put(`http://localhost:8989/departments/${deptForm.value.id}`, {
+        name: deptForm.value.name,
+        manager_id: deptForm.value.manager_id,
+      });
+      message.success("部门已更新");
+    } else {
+      await axios.post("http://localhost:8989/departments", {
+        name: deptForm.value.name,
+        manager_id: deptForm.value.manager_id,
+      });
+      message.success("部门已创建");
+    }
+    deptModalVisible.value = false;
+    await fetchDepartments();
+  } catch (e) {
+    console.error("保存部门失败", e);
+    message.error(e?.response?.data?.error || "保存部门失败");
+  } finally {
+    deptSaving.value = false;
+  }
+};
+
+const deleteDept = async (record) => {
+  try {
+    await axios.delete(`http://localhost:8989/departments/${record.id}`);
+    message.success("部门已删除");
+    await fetchDepartments();
+  } catch (e) {
+    console.error("删除部门失败", e);
+    message.error(e?.response?.data?.error || "删除部门失败");
+  }
+};
+
 onMounted(() => {
   fetchTableDataWithSearch();
+  fetchDepartments();
+  fetchUsers();
 });
 </script>
 
