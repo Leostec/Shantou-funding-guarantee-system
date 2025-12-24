@@ -71,6 +71,9 @@ const rules = {
 const handleLoginSuccess = (role = "user") => {
   localStorage.setItem("username", loginForm.value.username);
   localStorage.setItem("authRole", role || "user");
+  if (loginResponse.value?.token) {
+    localStorage.setItem("authToken", loginResponse.value.token);
+  }
   // 部门名在登录成功后写入（如果有）
   if (loginResponse.value?.department_name !== undefined) {
     localStorage.setItem("department_name", loginResponse.value.department_name || "");

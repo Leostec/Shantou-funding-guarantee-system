@@ -7,12 +7,26 @@ import pandas as pd
 import numpy as np
 from flask_cors import CORS
 from datetime import datetime
+import uuid
 import joblib
 from sklearn.impute import SimpleImputer
-from transformers import BertModel, BertTokenizer
-import torch
-import shap
-import matplotlib.pyplot as plt
+# 可选依赖，导入失败时仅影响部分模型功能
+try:
+    from transformers import BertModel, BertTokenizer  # noqa: F401
+except ImportError:
+    BertModel = BertTokenizer = None
+try:
+    import torch  # noqa: F401
+except ImportError:
+    torch = None
+try:
+    import shap  # noqa: F401
+except ImportError:
+    shap = None
+try:
+    import matplotlib.pyplot as plt  # noqa: F401
+except ImportError:
+    plt = None
 import os
 from docx import Document
 from openpyxl import Workbook
@@ -38,6 +52,9 @@ logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 CORS(app)
+
+# 简单内存令牌存储，重启后自动失效
+auth_tokens = {}
 
 # Database configuration
 DB_CONFIG = {
@@ -205,10 +222,36 @@ def login_user():
         except Exception as e:
             logger.error(f"Failed to fetch department name: {e}")
 
-        return jsonify({"message": "登录成功", "role": user.get("role", "user"), "department_name": dept_name})
+        # 生成一次性令牌，后端重启即失效
+        token = str(uuid.uuid4())
+        auth_tokens[token] = {
+            "user_id": user["id"],
+            "role": user.get("role", "user"),
+            "username": username,
+            "created_at": datetime.utcnow().isoformat()
+        }
+
+        return jsonify({
+            "message": "登录成功",
+            "role": user.get("role", "user"),
+            "department_name": dept_name,
+            "token": token
+        })
     except Exception as e:
         logger.error(f"Login error: {e}")
         return jsonify({"message": "登录失败"}), 500
+
+@app.route("/auth-check", methods=["GET"])
+def auth_check():
+    """校验令牌有效性，用于前端路由守卫"""
+    auth_header = request.headers.get("Authorization", "")
+    if not auth_header.startswith("Bearer "):
+        return jsonify({"message": "未授权"}), 401
+    token = auth_header.replace("Bearer ", "").strip()
+    info = auth_tokens.get(token)
+    if not info:
+        return jsonify({"message": "令牌无效或已过期"}), 401
+    return jsonify({"message": "ok", "role": info.get("role"), "username": info.get("username")})
 
 class Robot:
     def __init__(self):

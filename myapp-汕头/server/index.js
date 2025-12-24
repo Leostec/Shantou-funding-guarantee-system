@@ -483,7 +483,12 @@ app.post('/departments', async (req, res) => {
     if (!name) return res.status(400).send({ error: 'name is required' });
     if (!manager_id) return res.status(400).send({ error: 'manager_id is required' });
     try {
+        // 如果该负责人已在其他部门担任负责人，先移除旧绑定以避免唯一约束冲突
+        await queryAsync('UPDATE departments SET manager_id = NULL WHERE manager_id = ?', [manager_id]);
+
         const result = await queryAsync('INSERT INTO departments (name, manager_id) VALUES (?, ?)', [name, manager_id]);
+        // 同步负责人角色与部门
+        await queryAsync('UPDATE users SET role = ?, department_id = ? WHERE id = ?', ['manager', result.insertId, manager_id]);
         res.send({ success: true, id: result.insertId });
     } catch (error) {
         console.error('Error creating department:', error);
@@ -496,6 +501,14 @@ app.put('/departments/:id', async (req, res) => {
     const { name, manager_id } = req.body || {};
     
     if (!id) return res.status(400).send({ error: 'id is required' });
+    let oldManagerId = null;
+    try {
+        const rows = await queryAsync('SELECT manager_id FROM departments WHERE id = ?', [id]);
+        if (rows && rows.length > 0) oldManagerId = rows[0].manager_id;
+    } catch (error) {
+        console.error('Error reading department before update:', error);
+    }
+
     const updates = [];
     const params = [];
     if (name) { updates.push('name = ?'); params.push(name); }
@@ -503,7 +516,19 @@ app.put('/departments/:id', async (req, res) => {
     if (updates.length === 0) return res.status(400).send({ error: 'No fields to update' });
     params.push(id);
     try {
+        if (manager_id) {
+            // 释放该负责人在其他部门的绑定，避免唯一约束冲突
+            await queryAsync('UPDATE departments SET manager_id = NULL WHERE manager_id = ? AND id <> ?', [manager_id, id]);
+        }
         await queryAsync(`UPDATE departments SET ${updates.join(', ')} WHERE id = ?`, params);
+        if (manager_id) {
+            // 设置新负责人
+            await queryAsync('UPDATE users SET role = ?, department_id = ? WHERE id = ?', ['manager', id, manager_id]);
+            // 旧负责人降级为普通用户，保留部门归属
+            if (oldManagerId && oldManagerId !== manager_id) {
+                await queryAsync('UPDATE users SET role = ? WHERE id = ?', ['user', oldManagerId]);
+            }
+        }
         res.send({ success: true });
     } catch (error) {
         console.error('Error updating department:', error);
@@ -515,7 +540,7 @@ app.delete('/departments/:id', async (req, res) => {
     const id = req.params.id;
     if (!id) return res.status(400).send({ error: 'id is required' });
     try {
-        await queryAsync('UPDATE users SET department_id = NULL WHERE department_id = ?', [id]);
+        await queryAsync('UPDATE users SET role = "user", department_id = NULL WHERE department_id = ?', [id]);
         await queryAsync('DELETE FROM departments WHERE id = ?', [id]);
         res.send({ success: true });
     } catch (error) {
@@ -527,4 +552,3 @@ app.delete('/departments/:id', async (req, res) => {
 app.listen(8989, () => {
     console.log('启动成功');
 });
-

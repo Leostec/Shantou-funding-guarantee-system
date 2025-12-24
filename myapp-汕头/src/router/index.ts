@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory} from 'vue-router'
+import axios from 'axios'
 import Layout from '../views/Layout/layout.vue'
 import Login from '../views/login/login.vue'
 import Information from '../views/Information/information.vue'
@@ -131,22 +132,44 @@ const router = createRouter({
   routes
 })
 
-router.beforeEach((to, from, next) => {
+const clearAuth = () => {
+  localStorage.removeItem('authRole');
+  localStorage.removeItem('authToken');
+  localStorage.removeItem('username');
+  localStorage.removeItem('department_name');
+};
+
+router.beforeEach(async (to, from, next) => {
   const authRole = localStorage.getItem('authRole');
-  const isLoggedIn = !!authRole;
+  const authToken = localStorage.getItem('authToken');
+  const isLoggedIn = !!authRole && !!authToken;
   if (to.path === '/') {
     next();
     return;
   }
   // 未登录统一跳转登录
   if (!isLoggedIn) {
+    clearAuth();
     next({ path: '/' });
     return;
   }
-  // 非 admin 拒绝访问 admin 路由
-  if (to.path.startsWith('/admin') && authRole !== 'admin') {
-    next({ path: '/' });
-    return;
+
+  // 强化校验：需要携带令牌，并向后端校验有效性
+  if (to.path.startsWith('/admin')) {
+    try {
+      const resp = await axios.get('http://127.0.0.1:5000/auth-check', {
+        headers: { Authorization: `Bearer ${authToken}` }
+      });
+      if (authRole !== 'admin' || resp.data?.role !== 'admin') {
+        clearAuth();
+        next({ path: '/' });
+        return;
+      }
+    } catch (e) {
+      clearAuth();
+      next({ path: '/' });
+      return;
+    }
   }
   next();
 });
