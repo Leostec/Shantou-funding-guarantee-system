@@ -1191,6 +1191,25 @@ const saveWithoutPredict = async () => {
   margin: 0 auto;
 }
 
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.page-header h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.subtitle {
+  margin: 4px 0 0;
+  color: #666;
+  font-size: 13px;
+}
+
 .main-content {
   display: flex;
   gap: 20px;

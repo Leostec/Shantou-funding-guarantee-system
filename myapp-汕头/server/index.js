@@ -458,8 +458,20 @@ app.post('/datahuizong', async (req, res) => {
 
 // 用户列表（用于选择部门负责人）
 app.get('/users', async (req, res) => {
+    const deptId = req.query.department_id;
     try {
-        const rows = await queryAsync('SELECT id, username FROM users ORDER BY id DESC');
+        let sql = `
+            SELECT u.id, u.username, u.role, u.department_id, u.created_at, d.name AS department_name
+            FROM users u
+            LEFT JOIN departments d ON u.department_id = d.id
+        `;
+        const params = [];
+        if (deptId) {
+            sql += ' WHERE u.department_id = ?';
+            params.push(deptId);
+        }
+        sql += ' ORDER BY u.id DESC';
+        const rows = await queryAsync(sql, params);
         res.send(rows);
     } catch (error) {
         console.error('Error fetching users:', error);

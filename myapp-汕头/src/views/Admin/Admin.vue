@@ -141,6 +141,36 @@
         </a-form-item>
       </a-form>
     </a-modal>
+
+    <div class="card table-card">
+      <div class="card-header">
+        <div>
+          <h3>员工管理</h3>
+          <p class="subtitle">按部门查看员工账号与角色</p>
+        </div>
+        <div class="actions">
+          <a-select
+            v-model:value="selectedDeptForUsers"
+            placeholder="选择部门筛选"
+            style="width: 200px"
+            allow-clear
+            :options="[
+              { label: '全部部门', value: null },
+              ...departments.map(d => ({ label: d.name, value: d.id }))
+            ]"
+            @change="fetchEmployees"
+          />
+          <a-button type="link" @click="fetchEmployees" :loading="employeesLoading">刷新</a-button>
+        </div>
+      </div>
+      <a-table
+        :columns="userColumns"
+        :data-source="employees"
+        :loading="employeesLoading"
+        :pagination="{ pageSize: 10 }"
+        row-key="id"
+      />
+    </div>
   </div>
 </template>
 
@@ -152,6 +182,7 @@ import { message } from "ant-design-vue";
 
 const tableData = ref([]);
 const departments = ref([]);
+const employees = ref([]);
 const searchName = ref("");
 const searchReportNumber = ref("");
 const searchUserName = ref("");
@@ -163,6 +194,8 @@ const deptSaving = ref(false);
 const deptForm = ref({ id: null, name: "", manager_id: null });
 const deptMode = ref("create");
 const userOptions = ref([]);
+const selectedDeptForUsers = ref(null);
+const employeesLoading = ref(false);
 const router = useRouter();
 const countZero = ref(0);
 const countLessThanOrEqual300 = ref(0);
@@ -226,6 +259,13 @@ const deptColumns = [
   { title: "操作", key: "actions" },
 ];
 
+const userColumns = [
+  { title: "用户名", dataIndex: "username", key: "username" },
+  { title: "角色", dataIndex: "role", key: "role" },
+  { title: "所属部门", dataIndex: "department_name", key: "department_name", customRender: ({ text }) => text || "未分配" },
+  { title: "创建时间", dataIndex: "created_at", key: "created_at", customRender: ({ text }) => formatDateTime(text) },
+];
+
 const userMap = computed(() => {
   const map = {};
   userOptions.value.forEach((u) => {
@@ -244,6 +284,21 @@ const fetchUsers = async () => {
   } catch (e) {
     console.error("获取用户失败", e);
     message.error(e?.response?.data?.error || "获取用户失败");
+  }
+};
+
+const fetchEmployees = async () => {
+  employeesLoading.value = true;
+  try {
+    const resp = await axios.get("http://localhost:8989/users", {
+      params: selectedDeptForUsers.value ? { department_id: selectedDeptForUsers.value } : {},
+    });
+    employees.value = resp.data || [];
+  } catch (e) {
+    console.error("获取员工失败", e);
+    message.error(e?.response?.data?.error || "获取员工失败");
+  } finally {
+    employeesLoading.value = false;
   }
 };
 
@@ -312,6 +367,7 @@ onMounted(() => {
   fetchTableDataWithSearch();
   fetchDepartments();
   fetchUsers();
+  fetchEmployees();
 });
 </script>
 
