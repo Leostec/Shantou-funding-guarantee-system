@@ -31,6 +31,7 @@
         <template v-if="column.key === 'actions'">
           <a-space>
             <a-button type="link" @click="openEdit(record)">编辑</a-button>
+            <a-button type="link" @click="downloadRecord(record)">下载</a-button>
             <a-popconfirm
               title="确认删除这条记录吗？"
               ok-text="删除"
@@ -355,6 +356,20 @@ const fetchEntries = async () => {
 onMounted(() => {
   fetchEntries();
 });
+
+const downloadRecord = (record: RecordItem) => {
+  const entries = getDisplayEntries(record);
+  const lines = entries.map((item) => `${item.label}: ${formatValue(item.value)}`).join('\n');
+  const content = `评审报告\n\n${lines}`;
+  const blob = new Blob([content], { type: 'application/msword' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const filename = `${record.project_number || 'report'}-report.doc`;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+};
 </script>
 
 <style scoped>
