@@ -373,14 +373,6 @@
                   <option value="0">否</option>
                 </select>
               </div>
-              <div class="form-item">
-                <label for="expert_opinion">专家评审意见:</label>
-                <textarea id="expert_opinion" v-model="expert_opinion" rows="3"></textarea>
-              </div>
-              <div class="form-item">
-                <label for="expert_amount">专家评审金额(万元):</label>
-                <input type="number" id="expert_amount" v-model="expert_amount" placeholder="万元" />
-              </div>
             </div>
         </div>
 
@@ -519,8 +511,6 @@ const movable_mortgage = ref('');
 const other_collateral = ref('');
 const is_growth_stage = ref('0');
 const used_youdaibao = ref('0');
-const expert_opinion = ref('');
-const expert_amount = ref('');
 
 // 暂存/恢复用：统一收集表单字段
 const DRAFT_KEY = "vis_form_draft";
@@ -599,8 +589,6 @@ const formFields = {
   other_collateral,
   is_growth_stage,
   used_youdaibao,
-  expert_opinion,
-  expert_amount,
 };
 
 const saveDraft = () => {
@@ -954,8 +942,6 @@ const predictContent = async () => {
           project_manager: project_manager.value,
           report_number: project_number.value, // 使用 project_number 作为 report_number
           predicted: predictedAmount,
-          expert_opinion: expert_opinion.value,
-          expert_amount: expert_amount.value,
           created_by: localStorage.getItem("username") || ""
         };
 
@@ -1030,8 +1016,6 @@ const predictContent = async () => {
           loan_purpose: loan_purpose.value,
           predicted: predictedAmount,
           prediction_text: predictionText.value, // 添加预测结果文本
-          expert_opinion: expert_opinion.value,
-          expert_amount: expert_amount.value,
           created_by: localStorage.getItem("username") || ""
         };
 
@@ -1093,8 +1077,6 @@ const saveWithoutPredict = async () => {
       project_manager: project_manager.value,
       report_number: project_number.value,
       predicted: predictedAmount,
-      expert_opinion: expert_opinion.value,
-      expert_amount: expert_amount.value,
       created_by: localStorage.getItem("username") || "",
     };
 
@@ -1168,8 +1150,6 @@ const saveWithoutPredict = async () => {
       loan_purpose: loan_purpose.value,
       predicted: predictedAmount,
       prediction_text: "",
-      expert_opinion: expert_opinion.value,
-      expert_amount: expert_amount.value,
       created_by: localStorage.getItem("username") || "",
     };
 

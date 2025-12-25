@@ -2,8 +2,8 @@
   <div class="page">
     <div class="page-header">
       <div>
-        <h2>我的录入</h2>
-        <p class="subtitle">查看我提交的每一条评估记录</p>
+        <h2>员工录入</h2>
+        <p class="subtitle">查看本部门员工提交的每一条评估记录</p>
       </div>
       <div class="actions">
         <span class="count">共 {{ records.length }} 条</span>
@@ -103,6 +103,7 @@ const columns = [
   { title: '申请期限(月)', dataIndex: 'application_period', key: 'application_period' },
   { title: '预测额度(万元)', dataIndex: 'predicted', key: 'predicted' },
   { title: '专家额度', dataIndex: 'expert_amount', key: 'expert_amount' },
+  { title: '录入员工', dataIndex: 'created_by', key: 'created_by' },
   { title: '创建时间', dataIndex: 'created_at', key: 'created_at', customRender: ({ text }: any) => formatDateTime(text) },
   { title: '操作', key: 'actions' },
 ];
@@ -340,8 +341,8 @@ const fetchEntries = async () => {
 
   loading.value = true;
   try {
-    const response = await axios.get('http://localhost:8989/loan-application', {
-      params: { createdBy: username.value },
+    const response = await axios.get('http://localhost:8989/department-entries', {
+      params: { manager: username.value },
     });
     records.value = response.data || [];
   } catch (error: any) {

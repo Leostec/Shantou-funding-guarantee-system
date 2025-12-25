@@ -20,10 +20,14 @@
           <desktop-outlined />
           <span>模型评估</span>
         </a-menu-item>
-        <a-menu-item key="/expert-review" @click="$router.push('/expert-review')">
-          <team-outlined />
-          <span>专家评审</span>
-        </a-menu-item>
+      <a-menu-item key="/expert-review" @click="$router.push('/expert-review')">
+        <team-outlined />
+        <span>专家评审</span>
+      </a-menu-item>
+      <a-menu-item v-if="role === 'manager'" key="/staff-entries" @click="$router.push('/staff-entries')">
+        <user-outlined />
+        <span>员工录入</span>
+      </a-menu-item>
       </a-menu>
     </a-layout-sider>
     <a-layout class="main-layout">
@@ -58,6 +62,7 @@ const router = useRouter();
 const selectedKeys = ref<string[]>([router.currentRoute.value.path]);
 const username = ref<string>(localStorage.getItem('username') || '');
 const department = ref<string>(localStorage.getItem('department_name') || '');
+const role = ref<string>(localStorage.getItem('authRole') || '');
 
 watch(
   () => router.currentRoute.value.path,
@@ -69,6 +74,7 @@ watch(
 
 const logout = () => {
   localStorage.removeItem('authRole');
+  localStorage.removeItem('authToken');
   localStorage.removeItem('username');
   message.success('已退出登录');
   router.push('/');

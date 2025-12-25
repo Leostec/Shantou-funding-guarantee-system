@@ -5,6 +5,7 @@
         <h2>管理员面板</h2>
         <p class="subtitle">筛选与查看全局报告</p>
       </div>
+      <a-button type="primary" danger @click="logout">退出登录</a-button>
     </div>
 
     <div class="card filter-card">
@@ -312,6 +313,7 @@ const deptColumns = [
 const userColumns = [
   { title: "用户名", dataIndex: "username", key: "username" },
   { title: "所属部门", dataIndex: "department_name", key: "department_name", customRender: ({ text }) => text || "未分配" },
+  { title: "角色", dataIndex: "role", key: "role" },
   { title: "创建时间", dataIndex: "created_at", key: "created_at", customRender: ({ text }) => formatDateTime(text) },
   { title: "操作", key: "actions" },
 ];
@@ -457,6 +459,14 @@ const deleteDept = async (record) => {
     console.error("删除部门失败", e);
     message.error(e?.response?.data?.error || "删除部门失败");
   }
+};
+
+const logout = () => {
+  localStorage.removeItem("authRole");
+  localStorage.removeItem("authToken");
+  localStorage.removeItem("username");
+  localStorage.removeItem("department_name");
+  router.push("/");
 };
 
 onMounted(() => {

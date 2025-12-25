@@ -330,6 +330,31 @@ app.get('/loan-application', (req, res) => {
     });
 });
 
+// 部门负责人查看本部门（除自己外）员工的录入
+app.get('/department-entries', async (req, res) => {
+    const manager = req.query.manager;
+    if (!manager) return res.status(400).send({ error: 'manager is required' });
+    try {
+        const users = await queryAsync('SELECT department_id FROM users WHERE username = ?', [manager]);
+        if (!users || users.length === 0 || !users[0].department_id) {
+            return res.status(400).send({ error: 'manager department not found' });
+        }
+        const deptId = users[0].department_id;
+        const rows = await queryAsync(
+            `SELECT la.* FROM loan_application la
+             WHERE la.created_by IN (
+                 SELECT username FROM users WHERE department_id = ? AND username <> ?
+             )
+             ORDER BY la.id DESC`,
+            [deptId, manager]
+        );
+        res.send(rows);
+    } catch (error) {
+        console.error('Error fetching department entries:', error);
+        res.status(500).send({ error: error.message });
+    }
+});
+
 // 更新贷款申请数据（按 id）
 app.put('/loan-application/:id', (req, res) => {
     const id = req.params.id;
