@@ -2,6 +2,7 @@ const mysql = require('mysql');
 const util = require('util');
 const express = require('express');
 const cors = require('cors');
+const crypto = require('crypto');
 
 const app = express();
 
@@ -475,6 +476,51 @@ app.get('/users', async (req, res) => {
         res.send(rows);
     } catch (error) {
         console.error('Error fetching users:', error);
+        res.status(500).send({ error: error.message });
+    }
+});
+
+// 生成与 werkzeug 兼容的 pbkdf2 sha256 哈希
+function generateWerkzeugHash(password) {
+    const method = 'pbkdf2:sha256';
+    const iterations = 600000;
+    const salt = crypto.randomBytes(16).toString('hex');
+    const dk = crypto.pbkdf2Sync(password, salt, iterations, 32, 'sha256').toString('hex');
+    return `${method}:${iterations}$${salt}$${dk}`;
+}
+
+// 更新用户（部门/角色/密码）
+app.put('/users/:id', async (req, res) => {
+    const id = req.params.id;
+    const { department_id, role, password } = req.body || {};
+    if (!id) return res.status(400).send({ error: 'id is required' });
+
+    const updates = [];
+    const params = [];
+    if (department_id !== undefined) { updates.push('department_id = ?'); params.push(department_id || null); }
+    if (role) { updates.push('role = ?'); params.push(role); }
+    if (password) { updates.push('password_hash = ?'); params.push(generateWerkzeugHash(password)); }
+    if (updates.length === 0) return res.status(400).send({ error: 'No fields to update' });
+    params.push(id);
+
+    try {
+        await queryAsync(`UPDATE users SET ${updates.join(', ')} WHERE id = ?`, params);
+        res.send({ success: true });
+    } catch (error) {
+        console.error('Error updating user:', error);
+        res.status(500).send({ error: error.message });
+    }
+});
+
+// 删除用户
+app.delete('/users/:id', async (req, res) => {
+    const id = req.params.id;
+    if (!id) return res.status(400).send({ error: 'id is required' });
+    try {
+        await queryAsync('DELETE FROM users WHERE id = ?', [id]);
+        res.send({ success: true });
+    } catch (error) {
+        console.error('Error deleting user:', error);
         res.status(500).send({ error: error.message });
     }
 });

@@ -169,8 +169,55 @@
         :loading="employeesLoading"
         :pagination="{ pageSize: 10 }"
         row-key="id"
-      />
+      >
+        <template #bodyCell="{ column, record }">
+          <template v-if="column.key === 'actions'">
+            <a-space>
+              <a-button type="link" @click="openEmployeeModal(record)">编辑</a-button>
+              <a-popconfirm
+                title="确认删除该员工吗？"
+                ok-text="删除"
+                cancel-text="取消"
+                @confirm="() => deleteEmployee(record)"
+              >
+                <a-button type="link" danger>删除</a-button>
+              </a-popconfirm>
+            </a-space>
+          </template>
+          <template v-else-if="column.key === 'created_at'">
+            {{ formatDateTime(record.created_at) }}
+          </template>
+          <template v-else>
+            {{ record[column.key] }}
+          </template>
+        </template>
+      </a-table>
     </div>
+    <a-modal
+      v-model:visible="employeeModalVisible"
+      title="编辑员工"
+      ok-text="保存"
+      cancel-text="取消"
+      :confirm-loading="employeeSaving"
+      @ok="submitEmployee"
+    >
+      <a-form layout="vertical">
+        <a-form-item label="用户名">
+          <a-input v-model:value="employeeForm.username" disabled />
+        </a-form-item>
+        <a-form-item label="所属部门">
+          <a-select
+            v-model:value="employeeForm.department_id"
+            :options="departments.map(d => ({ label: d.name, value: d.id }))"
+            placeholder="请选择部门"
+            allow-clear
+          />
+        </a-form-item>
+        <a-form-item label="重置密码（可选）">
+          <a-input-password v-model:value="employeeForm.password" placeholder="留空则不修改密码" />
+        </a-form-item>
+      </a-form>
+    </a-modal>
   </div>
 </template>
 
@@ -196,6 +243,9 @@ const deptMode = ref("create");
 const userOptions = ref([]);
 const selectedDeptForUsers = ref(null);
 const employeesLoading = ref(false);
+const employeeModalVisible = ref(false);
+const employeeSaving = ref(false);
+const employeeForm = ref({ id: null, username: "", department_id: null, password: "" });
 const router = useRouter();
 const countZero = ref(0);
 const countLessThanOrEqual300 = ref(0);
@@ -261,9 +311,9 @@ const deptColumns = [
 
 const userColumns = [
   { title: "用户名", dataIndex: "username", key: "username" },
-  { title: "角色", dataIndex: "role", key: "role" },
   { title: "所属部门", dataIndex: "department_name", key: "department_name", customRender: ({ text }) => text || "未分配" },
   { title: "创建时间", dataIndex: "created_at", key: "created_at", customRender: ({ text }) => formatDateTime(text) },
+  { title: "操作", key: "actions" },
 ];
 
 const userMap = computed(() => {
@@ -299,6 +349,52 @@ const fetchEmployees = async () => {
     message.error(e?.response?.data?.error || "获取员工失败");
   } finally {
     employeesLoading.value = false;
+  }
+};
+
+const openEmployeeModal = (record) => {
+  if (!record) return;
+  employeeForm.value = {
+    id: record.id,
+    username: record.username,
+    department_id: record.department_id || null,
+    password: "",
+  };
+  employeeModalVisible.value = true;
+};
+
+const submitEmployee = async () => {
+  if (!employeeForm.value.id) {
+    message.error("缺少用户ID");
+    return;
+  }
+  employeeSaving.value = true;
+  try {
+    await axios.put(`http://localhost:8989/users/${employeeForm.value.id}`, {
+      department_id: employeeForm.value.department_id,
+      password: employeeForm.value.password ? employeeForm.value.password : undefined,
+    });
+    message.success("已更新员工信息");
+    employeeModalVisible.value = false;
+    employeeForm.value.password = "";
+    await fetchEmployees();
+  } catch (e) {
+    console.error("更新员工失败", e);
+    message.error(e?.response?.data?.error || "更新员工失败");
+  } finally {
+    employeeSaving.value = false;
+  }
+};
+
+const deleteEmployee = async (record) => {
+  if (!record?.id) return;
+  try {
+    await axios.delete(`http://localhost:8989/users/${record.id}`);
+    message.success("已删除员工");
+    await fetchEmployees();
+  } catch (e) {
+    console.error("删除员工失败", e);
+    message.error(e?.response?.data?.error || "删除员工失败");
   }
 };
 
