@@ -331,6 +331,14 @@
                     <td><button type="button" class="link-btn" @click="removeLoanRow(idx)" v-if="loanRows.length > 1">删除</button></td>
                   </tr>
                 </tbody>
+                <tfoot>
+                  <tr>
+                    <td colspan="2" style="text-align: right; font-weight: 600;">合计</td>
+                    <td>{{ totalLoanAmount }}</td>
+                    <td>{{ totalLoanBalance }}</td>
+                    <td colspan="6"></td>
+                  </tr>
+                </tfoot>
               </table>
               <div class="table-actions">
                 <button type="button" class="add-btn" @click="addLoanRow">+ 新增一行</button>
@@ -340,6 +348,102 @@
           </div>
 
 
+
+          <div class="form-section">
+            <h3>五、电费情况：</h3>
+            <div class="table-wrapper">
+              <table class="credit-table">
+                <thead>
+                  <tr>
+                    <th>时间</th>
+                    <th v-for="m in monthsList" :key="'em'+m">{{ m }}月</th>
+                    <th>合计</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><input v-model="electricityBalance.time" placeholder="如：电费" /></td>
+                    <td v-for="(val, idx) in electricityBalance.months" :key="'eb'+idx">
+                      <input v-model="electricityBalance.months[idx]" type="number" placeholder="数值" />
+                    </td>
+                    <td><input v-model="electricityBalance.total" type="number" placeholder="合计" /></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="form-grid">
+              <div class="form-item">
+                <label for="electricity_comment">电费情况补充:</label>
+                <textarea id="electricity_comment" v-model="electricity_comment" rows="3" placeholder="补充说明电费情况"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h3>六、评价及结论</h3>
+            <div class="form-grid">
+              <div class="form-item">
+                <label for="receivable_sales_ratio">应收款与年营业额对比%:</label>
+                <input id="receivable_sales_ratio" type="number" v-model="receivable_sales_ratio" placeholder="%" />
+              </div>
+              <div class="form-item">
+                <label for="inventory_sales_ratio">存货与年营业额对比%:</label>
+                <input id="inventory_sales_ratio" type="number" v-model="inventory_sales_ratio" placeholder="%" />
+              </div>
+              <div class="form-item">
+                <label for="asset_debt_ratio_eval">资产负债率%:</label>
+                <input id="asset_debt_ratio_eval" type="number" v-model="asset_debt_ratio" placeholder="%" />
+              </div>
+              <div class="form-item">
+                <label for="total_assets_eval">总资产:</label>
+                <input id="total_assets_eval" type="number" v-model="total_assets" placeholder="万元" />
+              </div>
+              <div class="form-item">
+                <label for="total_liabilities_eval">总负债:</label>
+                <input id="total_liabilities_eval" type="number" v-model="total_liabilities" placeholder="万元" />
+              </div>
+              <div class="form-item">
+                <label for="net_assets_eval">净资产:</label>
+                <input id="net_assets_eval" type="number" v-model="net_assets" placeholder="万元" />
+              </div>
+              <div class="form-item">
+                <label for="profit_usage_eval">利润去向:</label>
+                <textarea id="profit_usage_eval" v-model="profit_usage" rows="3" placeholder="利润去向说明"></textarea>
+              </div>
+              <div class="form-item">
+                <label for="soft_info_analysis">软信息分析:</label>
+                <textarea id="soft_info_analysis" v-model="soft_info_analysis" rows="3" placeholder="软信息分析"></textarea>
+              </div>
+              <div class="form-item">
+                <label for="limit_assessment">额度测定:</label>
+                <input id="limit_assessment" type="number" v-model="limit_assessment" placeholder="万元" />
+              </div>
+              <div class="form-item">
+                <label for="repayment_income_ratio_eval">月还款额/月可支配收入:</label>
+                <input id="repayment_income_ratio_eval" type="number" v-model="repayment_income_ratio" placeholder="比例" />
+              </div>
+            </div>
+          </div>
+            
+          <div class="form-section">
+            <h4>3、征信及对外担保情况：</h4>
+            <div class="form-grid">
+              <div class="form-item">
+                <label for="credit_guarantee_info">征信及对外担保情况:</label>
+                <textarea id="credit_guarantee_info" v-model="credit_guarantee_info" rows="3" placeholder="描述征信记录、对外担保等情况"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h4>4、诉讼情况:</h4>
+            <div class="form-grid">
+              <div class="form-item">
+                <label for="litigation_info">诉讼情况:</label>
+                <textarea id="litigation_info" v-model="litigation_info" rows="3" placeholder="描述涉诉、仲裁、执行等情况"></textarea>
+              </div>
+            </div>
+          </div>
 
           <!-- 企业信息 -->
           <div class="form-section">
@@ -647,7 +751,7 @@
 </template>
   
 <script setup>
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import axios from "axios";
 import { Form, InputNumber, Button } from "ant-design-vue";
 import { ExclamationCircleFilled } from "@ant-design/icons-vue";
@@ -742,6 +846,12 @@ const used_youdaibao = ref('0');
 const bankRows = ref([{ account: '', accountNo: '' }]);
 const bankBalance = ref({ time: '', months: Array(12).fill(''), avg: '' });
 const monthsList = [1,2,3,4,5,6,7,8,9,10,11,12];
+const electricityBalance = ref({ time: '', months: Array(12).fill(''), total: '' });
+const electricity_comment = ref('');
+const receivable_sales_ratio = ref('');
+const inventory_sales_ratio = ref('');
+const soft_info_analysis = ref('');
+const limit_assessment = ref('');
 const loanRows = ref([{
   bizType: '',
   loanAmount: '',
@@ -752,6 +862,23 @@ const loanRows = ref([{
   bank: '',
   remark: '',
 }]);
+
+const credit_guarantee_info = ref('');
+const litigation_info = ref('');
+
+const totalLoanAmount = computed(() => {
+  return loanRows.value.reduce((sum, row) => {
+    const val = parseFloat(row.loanAmount);
+    return sum + (isNaN(val) ? 0 : val);
+  }, 0);
+});
+
+const totalLoanBalance = computed(() => {
+  return loanRows.value.reduce((sum, row) => {
+    const val = parseFloat(row.loanBalance);
+    return sum + (isNaN(val) ? 0 : val);
+  }, 0);
+});
 
 // 暂存/恢复用：统一收集表单字段
 const DRAFT_KEY = "vis_form_draft";
@@ -833,8 +960,16 @@ const formFields = {
   business_model_desc,
   siteRows,
   loanRows,
+  credit_guarantee_info,
+  litigation_info,
   bankRows,
   bankBalance,
+  electricityBalance,
+  electricity_comment,
+  receivable_sales_ratio,
+  inventory_sales_ratio,
+  soft_info_analysis,
+  limit_assessment,
 };
 
 const addSiteRow = () => {
@@ -1292,14 +1427,21 @@ const predictContent = async () => {
           equipment_mortgage: equipment_mortgage.value,
           is_growth_stage: is_growth_stage.value,
           used_youdaibao: used_youdaibao.value,
-      education_work_experience: education_work_experience.value,
-      family_social_relations: family_social_relations.value,
+          education_work_experience: education_work_experience.value,
+          family_social_relations: family_social_relations.value,
           business_model: business_model.value,
           counter_guarantee: counter_guarantee.value,
           main_business: main_business.value,
           profit_usage: profit_usage.value,
           other_soft_info: other_soft_info.value,
           loan_purpose: loan_purpose.value,
+          credit_guarantee_info: credit_guarantee_info.value,
+          litigation_info: litigation_info.value,
+          electricity_comment: electricity_comment.value,
+          receivable_sales_ratio: receivable_sales_ratio.value,
+          inventory_sales_ratio: inventory_sales_ratio.value,
+          soft_info_analysis: soft_info_analysis.value,
+          limit_assessment: limit_assessment.value,
           predicted: predictedAmount,
           prediction_text: predictionText.value, // 添加预测结果文本
           created_by: localStorage.getItem("username") || ""
@@ -1434,6 +1576,13 @@ const saveWithoutPredict = async () => {
       profit_usage: profit_usage.value,
       other_soft_info: other_soft_info.value,
       loan_purpose: loan_purpose.value,
+      credit_guarantee_info: credit_guarantee_info.value,
+      litigation_info: litigation_info.value,
+      electricity_comment: electricity_comment.value,
+      receivable_sales_ratio: receivable_sales_ratio.value,
+      inventory_sales_ratio: inventory_sales_ratio.value,
+      soft_info_analysis: soft_info_analysis.value,
+      limit_assessment: limit_assessment.value,
       predicted: predictedAmount,
       prediction_text: "",
       created_by: localStorage.getItem("username") || "",
