@@ -10,115 +10,48 @@
       <!-- 左侧输入表单 -->
       <div class="input-section">
     <form @submit.prevent>
-
+          <!-- 基础信息 -->
+          <div class="form-section">
+            <h3>基础信息</h3>
+            <div class="form-grid">
+              <div class="form-item">
+                <label for="project_number">企业编号:</label>
+                <input type="text" id="project_number" v-model="project_number" />
+              </div>
+              <div class="form-item">
+                <label for="company_name">企业名称:</label>
+                <input type="text" id="company_name" v-model="company_name" />
+              </div>
+              <div class="form-item">
+                <label for="project_manager">项目经理A:</label>
+                <input type="text" id="project_manager" v-model="project_manager" />
+              </div>
+            </div>
+          </div>
 
           <!-- 申请信息 -->
           <div class="form-section">
-            <h3>一、申请贷款信息</h3>
+            <h3>申请信息</h3>
             <div class="form-grid">
-              <div class="form-item">
-                <label for="new_jiekuanrenmingcheng">(new)借款人名称:</label>
-                <input type="text" id="new_jiekuanrenmingcheng" v-model="new_jiekuanrenmingcheng" placeholder="请输入企业或个人名称" />
-              </div>
-
               <div class="form-item">
                 <label for="application_amount">申请金额:</label>
                 <input type="number" id="application_amount" v-model="application_amount" placeholder="万元" />
               </div>
               <div class="form-item">
-                <label for="application_period">申请期限:</label>
+          <label for="application_period">申请期限:</label>
                 <input type="number" id="application_period" v-model="application_period" placeholder="年" />
               </div>
               <div class="form-item">
                 <label for="repayment_method">申请还款方案还款方式:</label>
                 <input type="number" id="repayment_method" v-model="repayment_method" placeholder="万元" />
               </div>
-              <div class="form-item">
-                <label for="new_daikuanyongtu">(new)贷款用途:</label>
-                <input type="text" id="new_daikuanyongtu" v-model="new_daikuanyongtu" placeholder="请输入贷款用途" />
-              </div>
             </div>
           </div>
 
-            <!-- 二、项目基本情况 -->
-            <div class="form-section">
-            <h3>二、项目基本情况</h3>
-            <div class="form-grid">
-              <div class="form-item">
-                <label for="company_name">企业名称:</label>
-                <input type="text" id="company_name" v-model="company_name" />
-              </div>
-
-              <div class="form-item">
-                <label for="new_zhuceziben">(new)注册资本:</label>
-                <input type="number" id="new_zhuceziben" v-model="new_zhuceziben" placeholder="万元" />
-              </div>
-
-              <div class="form-item">
-                <label for="project_number">企业编号:</label>
-                <input type="text" id="project_number" v-model="project_number" />
-              </div>
-
-              <div class="form-item">
-                <label for="new_chenglishijian">(new)成立时间:</label>
-                <input type="date" id="new_chenglishijian" v-model="new_chenglishijian" />
-              </div>
-
-              <div class="form-item">
-                <label for="project_manager">项目经理A:</label>
-                <input type="text" id="project_manager" v-model="project_manager" />
-              </div>
-              
-              <div class="form-item">
-                <label for="employee_count">企业雇佣人数:</label>
-                <input type="number" id="employee_count" v-model="employee_count" placeholder="人" />
-              </div>
-
-              <div class="form-item full-width">
-                <label for="new_zhucedizhi">(new)注册地址:</label>
-                <input type="text" id="new_zhucedizhi" v-model="new_zhucedizhi" placeholder="详细工商注册地址" />
-              </div>
-
-              <div class="form-item full-width">
-                <label for="new_zhuyingyewu">(new)主营业务:</label>
-                <input type="text" id="new_zhuyingyewu" v-model="new_zhuyingyewu" placeholder="主要产品或服务内容" />
-              </div>
-
-              <div class="form-item full-width">
-                <label for="new_gudongqingkuang">(new)股东情况:</label>
-                <textarea id="new_gudongqingkuang" v-model="new_gudongqingkuang" placeholder="主要股东姓名及持股比例"></textarea>
-              </div>
-            </div>
-          </div>
-
+          <!-- 个人信息 -->
           <div class="form-section">
-            <h3>申请人（实控人）情况</h3>
+            <h3>个人信息</h3>
             <div class="form-grid">
-              <div class="form-item">
-                <label for="new_shikongrenxingming">(new)实控人姓名:</label>
-                <input type="text" id="new_shikongrenxingming" v-model="new_shikongrenxingming" placeholder="请输入姓名" />
-              </div>
-
-              <div class="form-item">
-                <label for="new_jiguan">(new)籍贯:</label>
-                <input type="text" id="new_jiguan" v-model="new_jiguan" placeholder="省/市" />
-              </div>
-
-              <div class="form-item">
-                <label for="new_chushengriqi">(new)出生日期:</label>
-                <input type="date" id="new_chushengriqi" v-model="new_chushengriqi" />
-              </div>
-
-              <div class="form-item">
-                <label for="new_hangyefuwunianxian">(new)行业服务年限:</label>
-                <input type="number" id="new_hangyefuwunianxian" v-model="new_hangyefuwunianxian" placeholder="年" />
-              </div>
-
-              <div class="form-item">
-                <label for="new_peiouxingming">(new)配偶姓名:</label>
-                <input type="text" id="new_peiouxingming" v-model="new_peiouxingming" placeholder="未婚可不填" />
-              </div>
-
               <div class="form-item">
                 <label for="controller_gender">实控人性别:</label>
                 <select id="controller_gender" v-model="controller_gender">
@@ -126,7 +59,6 @@
                   <option value="0">女</option>
                 </select>
               </div>
-
               <div class="form-item">
                 <label for="education_level">实控人文化程度:</label>
                 <select id="education_level" v-model="education_level">
@@ -142,7 +74,6 @@
                   <option value="7">博士后</option>
                 </select>
               </div>
-
               <div class="form-item">
                 <label for="marital_status">婚姻状态:</label>
                 <select id="marital_status" v-model="marital_status">
@@ -152,7 +83,6 @@
                   <option value="3">丧偶</option>
                 </select>
               </div>
-
               <div class="form-item">
                 <label for="residence_type">居住场所类型:</label>
                 <select id="residence_type" v-model="residence_type">
@@ -160,37 +90,13 @@
                   <option value="1">租赁</option>
                 </select>
               </div>
-
               <div class="form-item">
                 <label for="local_residence_years">本地居住时间:</label>
                 <input type="number" id="local_residence_years" v-model="local_residence_years" placeholder="年" />
               </div>
-              <div class="form-item">
-                <label for="family_harmony">家庭关系是否和睦:</label>
-                <select id="family_harmony" v-model="family_harmony">
-                  <option value="1">是</option>
-                  <option value="0">否</option>
-                </select>
-              </div>
-              <div class="form-item">
-                <label for="minor_children">孩子（未成年）人数:</label>
-                <input type="number" id="minor_children" v-model="minor_children" placeholder="人" />
-              </div>
-              <div class="form-item">
-                <label for="adult_family_members">家庭成年人数:</label>
-                <input type="number" id="adult_family_members" v-model="adult_family_members" placeholder="人" />
-              </div>
-              <div class="form-item">
-                <label for="working_family_members">家庭参与劳动的人数:</label>
-                <input type="number" id="working_family_members" v-model="working_family_members" placeholder="人" />
-              </div>
-              <div class="form-item">
-                <label for="family_social_relations">家庭成员及情况:</label>
-                <textarea id="family_social_relations" v-model="family_social_relations" rows="4"></textarea>
-              </div>
             </div>
-            
           </div>
+
           <!-- 企业信息 -->
           <div class="form-section">
             <h3>企业信息</h3>
@@ -228,7 +134,10 @@
                   <option value="0">否</option>
                 </select>
               </div>
-
+              <div class="form-item">
+                <label for="employee_count">企业雇佣人数:</label>
+                <input type="number" id="employee_count" v-model="employee_count" placeholder="人" />
+              </div>
               <div class="form-item">
                 <label for="business_premises_type">经营场所类型:</label>
                 <select id="business_premises_type" v-model="business_premises_type">
@@ -342,7 +251,25 @@
           <div class="form-section">
             <h3>家庭信息</h3>
             <div class="form-grid">
-
+              <div class="form-item">
+                <label for="family_harmony">家庭关系是否和睦:</label>
+                <select id="family_harmony" v-model="family_harmony">
+                  <option value="1">是</option>
+                  <option value="0">否</option>
+                </select>
+              </div>
+              <div class="form-item">
+                <label for="minor_children">孩子（未成年）人数:</label>
+                <input type="number" id="minor_children" v-model="minor_children" placeholder="人" />
+              </div>
+              <div class="form-item">
+                <label for="adult_family_members">家庭成年人数:</label>
+                <input type="number" id="adult_family_members" v-model="adult_family_members" placeholder="人" />
+              </div>
+              <div class="form-item">
+                <label for="working_family_members">家庭参与劳动的人数:</label>
+                <input type="number" id="working_family_members" v-model="working_family_members" placeholder="人" />
+              </div>
             </div>
           </div>
 
@@ -457,7 +384,10 @@
                 <label for="education_work_experience">学习及工作经历:</label>
                 <textarea id="education_work_experience" v-model="education_work_experience" rows="4"></textarea>
               </div>
-
+              <div class="form-item">
+                <label for="family_social_relations">家庭成员及情况:</label>
+                <textarea id="family_social_relations" v-model="family_social_relations" rows="4"></textarea>
+              </div>
               <div class="form-item">
                 <label for="business_model">商业模式:</label>
                 <textarea id="business_model" v-model="business_model" rows="4"></textarea>
