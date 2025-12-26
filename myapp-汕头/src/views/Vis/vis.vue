@@ -191,6 +191,156 @@
             </div>
             
           </div>
+          <!-- 三、经营模式及场所 -->
+          <div class="form-section">
+            <h3>三、经营模式及场所</h3>
+            </div>
+            <div class="table-wrapper">
+              <table class="site-table">
+                <thead>
+                  <tr>
+                    <th>序号</th>
+                    <th>地址</th>
+                    <th>建筑面积</th>
+                    <th>土地面积</th>
+                    <th>自有/租赁</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(row, idx) in siteRows" :key="idx">
+                    <td>{{ idx + 1 }}</td>
+                    <td><input v-model="row.address" type="text" placeholder="地址" /></td>
+                    <td><input v-model="row.buildingArea" type="number" placeholder="㎡" /></td>
+                    <td><input v-model="row.landArea" type="number" placeholder="㎡" /></td>
+                    <td>
+                      <select v-model="row.ownership">
+                        <option value="自有">自有</option>
+                        <option value="租赁">租赁</option>
+                      </select>
+                    </td>
+                    <td>
+                      <button type="button" class="link-btn" @click="removeSiteRow(idx)" v-if="siteRows.length > 1">删除</button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              <div class="table-actions">
+                <button type="button" class="add-btn" @click="addSiteRow">+ 新增一行</button>
+              </div>
+            </div>
+            <div class="form-grid">
+              <div class="form-item">
+                <label for="business_model_desc">经营模式概述:</label>
+                <textarea id="business_model_desc" v-model="business_model_desc" rows="3" placeholder="简要说明经营模式、主要销售渠道等"></textarea>
+              </div>
+          </div>
+
+
+          <!-- 四、资信状况 -->
+          <div class="form-section">
+            <h3>四、资信状况</h3>
+            <h4>1、银行月末余额（近一年）</h4>
+            </div>
+            <div class="table-wrapper">
+              <table class="site-table">
+                <thead>
+                  <tr>
+                    <th>序号</th>
+                    <th>账户</th>
+                    <th>账号</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(row, idx) in bankRows" :key="idx">
+                    <td>{{ idx + 1 }}</td>
+                    <td><input v-model="row.account" type="text" placeholder="" /></td>
+                    <td><input v-model="row.accountNo" type="text" placeholder="" /></td>
+
+                    <td>
+                      <button type="button" class="link-btn" @click="removeBankRow(idx)" v-if="bankRows.length > 1">删除</button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              <div class="table-actions">
+                <button type="button" class="add-btn" @click="addBankRow">+ 新增一行</button>
+              </div>
+            </div>
+
+          <div class="table-wrapper">
+            <table class="credit-table">
+              <thead>
+                <tr>
+                  <th>时间</th>
+                  <th v-for="m in monthsList" :key="'m'+m">{{ m }}月</th>
+                  <th>月均</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><input v-model="bankBalance.time" placeholder="如：余额" /></td>
+                  <td v-for="(val, idx) in bankBalance.months" :key="'bm'+idx">
+                    <input v-model="bankBalance.months[idx]" type="number" placeholder="数值" />
+                  </td>
+                  <td><input v-model="bankBalance.avg" type="number" placeholder="月均" /></td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="form-grid">
+              <div class="form-item">
+                <label for="buchong">补充:</label>
+                <textarea id="buchong" v-model="buchong" rows="3" placeholder=""></textarea>
+              </div>
+            </div>
+          </div>
+
+
+
+
+          <div class="form-section">
+            <h4>2、现有贷款情况</h4>
+            <div class="table-wrapper">
+              <table class="site-table">
+                <thead>
+                  <tr>
+                    <th>序号</th>
+                    <th>业务品种</th>
+                    <th>贷款金额</th>
+                    <th>贷款余额</th>
+                    <th>担保方式</th>
+                    <th>开始日期</th>
+                    <th>终止日期</th>
+                    <th>合作银行</th>
+                    <th>备注</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(row, idx) in loanRows" :key="idx">
+                    <td>{{ idx + 1 }}</td>
+                    <td><input v-model="row.bizType" type="text" placeholder="业务品种" /></td>
+                    <td><input v-model="row.loanAmount" type="number" placeholder="万元" /></td>
+                    <td><input v-model="row.loanBalance" type="number" placeholder="万元" /></td>
+                    <td><input v-model="row.guaranteeType" type="text" placeholder="担保方式" /></td>
+                    <td><input v-model="row.startDate" type="date" /></td>
+                    <td><input v-model="row.endDate" type="date" /></td>
+                    <td><input v-model="row.bank" type="text" placeholder="合作银行" /></td>
+                    <td><input v-model="row.remark" type="text" placeholder="备注" /></td>
+                    <td><button type="button" class="link-btn" @click="removeLoanRow(idx)" v-if="loanRows.length > 1">删除</button></td>
+                  </tr>
+                </tbody>
+              </table>
+              <div class="table-actions">
+                <button type="button" class="add-btn" @click="addLoanRow">+ 新增一行</button>
+              </div>
+            </div>
+
+          </div>
+
+
+
           <!-- 企业信息 -->
           <div class="form-section">
             <h3>企业信息</h3>
@@ -505,6 +655,14 @@ import { ElMessage } from "element-plus";
 
 //创建列表
 const predictions = ref([]);
+// 经营模式及场所
+const business_model_desc = ref('');
+const siteRows = ref([{
+  address: '',
+  buildingArea: '',
+  landArea: '',
+  ownership: '自有',
+}]);
 
 //输入框初始化
 const project_number = ref('');
@@ -581,6 +739,19 @@ const movable_mortgage = ref('');
 const other_collateral = ref('');
 const is_growth_stage = ref('0');
 const used_youdaibao = ref('0');
+const bankRows = ref([{ account: '', accountNo: '' }]);
+const bankBalance = ref({ time: '', months: Array(12).fill(''), avg: '' });
+const monthsList = [1,2,3,4,5,6,7,8,9,10,11,12];
+const loanRows = ref([{
+  bizType: '',
+  loanAmount: '',
+  loanBalance: '',
+  guaranteeType: '',
+  startDate: '',
+  endDate: '',
+  bank: '',
+  remark: '',
+}]);
 
 // 暂存/恢复用：统一收集表单字段
 const DRAFT_KEY = "vis_form_draft";
@@ -659,7 +830,52 @@ const formFields = {
   other_collateral,
   is_growth_stage,
   used_youdaibao,
+  business_model_desc,
+  siteRows,
+  loanRows,
+  bankRows,
+  bankBalance,
 };
+
+const addSiteRow = () => {
+  siteRows.value.push({
+    address: '',
+    buildingArea: '',
+    landArea: '',
+    ownership: '自有',
+  });
+};
+
+const removeSiteRow = (idx) => {
+  siteRows.value.splice(idx, 1);
+};
+
+const addBankRow = () => {
+  bankRows.value.push({ account: '', accountNo: '' });
+};
+
+const removeBankRow = (idx) => {
+  bankRows.value.splice(idx, 1);
+};
+
+const addLoanRow = () => {
+  loanRows.value.push({
+    bizType: '',
+    loanAmount: '',
+    loanBalance: '',
+    guaranteeType: '',
+    startDate: '',
+    endDate: '',
+    bank: '',
+    remark: '',
+  });
+};
+
+const removeLoanRow = (idx) => {
+  loanRows.value.splice(idx, 1);
+};
+
+// 银行月末余额表格数据
 
 const saveDraft = () => {
   const draft = {};
@@ -1420,6 +1636,22 @@ const saveWithoutPredict = async () => {
   margin-bottom: 10px;
 }
 
+.credit-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.credit-table th,
+.credit-table td {
+  border: 1px solid #ddd;
+  padding: 6px 8px;
+  text-align: left;
+}
+
+.credit-table th {
+  background: #f7f7f7;
+}
+
 .loading-container {
   display: flex;
   flex-direction: column;
@@ -1455,4 +1687,41 @@ const saveWithoutPredict = async () => {
   50% { opacity: 1; }
   100% { opacity: 0.6; }
 }
+.table-wrapper {
+  margin-top: 10px;
+}
+
+.site-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.site-table th,
+.site-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+.site-table th {
+  background: #f7f7f7;
+}
+
+.table-actions {
+  margin-top: 8px;
+}
+
+.add-btn,
+.link-btn {
+  background: none;
+  border: none;
+  color: #1677ff;
+  cursor: pointer;
+}
+
+.add-btn:hover,
+.link-btn:hover {
+  text-decoration: underline;
+}
+
 </style>
