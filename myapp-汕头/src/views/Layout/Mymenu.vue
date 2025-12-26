@@ -12,7 +12,7 @@
           <pie-chart-outlined />
           <span>信息录入</span>
         </a-menu-item>
-        <a-menu-item key="/my-entries" @click="$router.push('/my-entries')">
+        <a-menu-item key="/my-entries" @click="$router.push({ name: 'myEntries' })">
           <user-outlined />
           <span>我的录入</span>
         </a-menu-item>

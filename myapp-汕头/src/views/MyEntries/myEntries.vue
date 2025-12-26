@@ -276,7 +276,7 @@ const getDisplayEntries = (record: RecordItem) => {
   return orderedKeys.map((key) => ({
     key,
     label: fieldLabels[key] || key,
-    value: record[key],
+    value: formatDisplayValue(key, record[key]),
   }));
 };
 
@@ -289,7 +289,53 @@ const formatDateTime = (val: any) => {
   if (!val) return '—';
   const d = new Date(val);
   if (Number.isNaN(d.getTime())) return val;
-  return d.toLocaleString('zh-CN', { hour12: false });
+  const pad = (n: number) => (n < 10 ? `0${n}` : `${n}`);
+  return `${d.getFullYear()}/${pad(d.getMonth() + 1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+};
+
+const formatDisplayValue = (key: string, value: any) => {
+  if (key === 'created_at') return formatDateTime(value);
+  const mapping: Record<string, Record<string | number, string>> = {
+    controller_gender: { 0: '女', 1: '男' },
+    education_level: {
+      0: '小学',
+      1: '初中',
+      1.5: '职高',
+      2: '高中/中专',
+      3: '大专',
+      4: '本科',
+      5: '硕士',
+      6: '博士',
+      7: '博士后',
+    },
+    marital_status: { 0: '未婚', 1: '已婚', 2: '离异', 3: '丧偶' },
+    residence_type: { 0: '自购', 1: '租赁' },
+    business_premises_type: { 0: '自有', 1: '租赁' },
+    is_foreign_trade: { 0: '否', 1: '是' },
+    is_cautious_industry: { 0: '否', 1: '是' },
+    company_guarantee: { 0: '否', 1: '是' },
+    personal_guarantee: { 0: '否', 1: '是' },
+    additional_guarantor: { 0: '否', 1: '是' },
+    is_growth_stage: { 0: '否', 1: '是' },
+    used_youdaibao: { 0: '否', 1: '是' },
+    family_harmony: { 0: '否', 1: '是' },
+    industry_category: {
+      0: '餐饮业',
+      1: '纺织业',
+      2: '服务业',
+      3: '公安安全管理业',
+      4: '建筑业',
+      5: '教育业',
+      6: '零售业',
+      7: '贸易',
+      8: '农业',
+      9: '制造业',
+    },
+  };
+  if (mapping[key] && mapping[key][value] !== undefined) {
+    return mapping[key][value];
+  }
+  return formatValue(value);
 };
 
 const openEdit = (record: RecordItem) => {
@@ -357,11 +403,62 @@ onMounted(() => {
   fetchEntries();
 });
 
+
+const cleanLabel = (label: string) => {
+  // 去掉括号中的代码提示
+  return label.replace(/（.*?）|\(.*?\)/g, '').trim();
+};
+
 const downloadRecord = (record: RecordItem) => {
   const entries = getDisplayEntries(record);
-  const lines = entries.map((item) => `${item.label}: ${formatValue(item.value)}`).join('\n');
-  const content = `评审报告\n\n${lines}`;
-  const blob = new Blob([content], { type: 'application/msword' });
+  const basicKeys = new Set([
+    'project_number',
+    'company_name',
+    'project_manager',
+    'application_amount',
+    'application_period',
+    'repayment_method',
+    'created_by',
+    'created_at',
+  ]);
+  const basic = entries.filter((e) => basicKeys.has(e.key));
+  const others = entries.filter((e) => !basicKeys.has(e.key));
+
+  const buildTable = (items: { label: string; value: any }[]) =>
+    items
+      .map(
+        (item) =>
+          `<tr><td class="label">${cleanLabel(item.label)}</td><td class="value">${formatDisplayValue(
+            item.key,
+            item.value
+          )}</td></tr>`
+      )
+      .join('');
+
+  const html = `
+    <html>
+      <head>
+        <meta charset="UTF-8" />
+        <style>
+          body { font-family: "Microsoft YaHei", sans-serif; padding: 20px; }
+          h1 { text-align: center; }
+          h2 { margin-top: 24px; }
+          table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+          td { border: 1px solid #999; padding: 6px 10px; }
+          td.label { width: 30%; background: #f7f7f7; font-weight: 600; }
+        </style>
+      </head>
+      <body>
+        <h1>评审报告</h1>
+        <h2>基础信息</h2>
+        <table>${buildTable(basic)}</table>
+        <h2>详细信息</h2>
+        <table>${buildTable(others)}</table>
+      </body>
+    </html>
+  `;
+
+  const blob = new Blob([html], { type: 'application/msword' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;

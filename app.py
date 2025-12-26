@@ -533,7 +533,7 @@ class Robot:
 @app.route('/demo', methods=['POST'])
 def data_type():
     data = request.get_json()
-    print(data)
+    print(data)#post方法接收到的参数
     logger.info(f"Received data: {data}")
 
     robot = Robot()
@@ -544,7 +544,8 @@ def data_type():
 
     # Generate enterprise data report
     qi_ye_data,dataset = robot.qiye_data(data)
-
+    print(qi_ye_data)#特征名
+    print(dataset)#带具体特征的prompt
     # Predict using machine learning models
     model_result = robot.pinggu_qiye(data)
 
