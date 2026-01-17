@@ -10,115 +10,48 @@
       <!-- 左侧输入表单 -->
       <div class="input-section">
     <form @submit.prevent>
-
+          <!-- 基础信息 -->
+          <div class="form-section">
+            <h3>基础信息</h3>
+            <div class="form-grid">
+              <div class="form-item">
+                <label for="project_number">企业编号:</label>
+                <input type="text" id="project_number" v-model="project_number" />
+              </div>
+              <div class="form-item">
+                <label for="company_name">企业名称:</label>
+                <input type="text" id="company_name" v-model="company_name" />
+              </div>
+              <div class="form-item">
+                <label for="project_manager">项目经理A:</label>
+                <input type="text" id="project_manager" v-model="project_manager" />
+              </div>
+            </div>
+          </div>
 
           <!-- 申请信息 -->
           <div class="form-section">
-            <h3>一、申请贷款信息</h3>
+            <h3>申请信息</h3>
             <div class="form-grid">
-              <div class="form-item">
-                <label for="new_jiekuanrenmingcheng">(new)借款人名称:</label>
-                <input type="text" id="new_jiekuanrenmingcheng" v-model="new_jiekuanrenmingcheng" placeholder="请输入企业或个人名称" />
-              </div>
-
               <div class="form-item">
                 <label for="application_amount">申请金额:</label>
                 <input type="number" id="application_amount" v-model="application_amount" placeholder="万元" />
               </div>
               <div class="form-item">
-                <label for="application_period">申请期限:</label>
+          <label for="application_period">申请期限:</label>
                 <input type="number" id="application_period" v-model="application_period" placeholder="年" />
               </div>
               <div class="form-item">
                 <label for="repayment_method">申请还款方案还款方式:</label>
                 <input type="number" id="repayment_method" v-model="repayment_method" placeholder="万元" />
               </div>
-              <div class="form-item">
-                <label for="new_daikuanyongtu">(new)贷款用途:</label>
-                <input type="text" id="new_daikuanyongtu" v-model="new_daikuanyongtu" placeholder="请输入贷款用途" />
-              </div>
             </div>
           </div>
 
-            <!-- 二、项目基本情况 -->
-            <div class="form-section">
-            <h3>二、项目基本情况</h3>
-            <div class="form-grid">
-              <div class="form-item">
-                <label for="company_name">企业名称:</label>
-                <input type="text" id="company_name" v-model="company_name" />
-              </div>
-
-              <div class="form-item">
-                <label for="new_zhuceziben">(new)注册资本:</label>
-                <input type="number" id="new_zhuceziben" v-model="new_zhuceziben" placeholder="万元" />
-              </div>
-
-              <div class="form-item">
-                <label for="project_number">企业编号:</label>
-                <input type="text" id="project_number" v-model="project_number" />
-              </div>
-
-              <div class="form-item">
-                <label for="new_chenglishijian">(new)成立时间:</label>
-                <input type="date" id="new_chenglishijian" v-model="new_chenglishijian" />
-              </div>
-
-              <div class="form-item">
-                <label for="project_manager">项目经理A:</label>
-                <input type="text" id="project_manager" v-model="project_manager" />
-              </div>
-              
-              <div class="form-item">
-                <label for="employee_count">企业雇佣人数:</label>
-                <input type="number" id="employee_count" v-model="employee_count" placeholder="人" />
-              </div>
-
-              <div class="form-item full-width">
-                <label for="new_zhucedizhi">(new)注册地址:</label>
-                <input type="text" id="new_zhucedizhi" v-model="new_zhucedizhi" placeholder="详细工商注册地址" />
-              </div>
-
-              <div class="form-item full-width">
-                <label for="new_zhuyingyewu">(new)主营业务:</label>
-                <input type="text" id="new_zhuyingyewu" v-model="new_zhuyingyewu" placeholder="主要产品或服务内容" />
-              </div>
-
-              <div class="form-item full-width">
-                <label for="new_gudongqingkuang">(new)股东情况:</label>
-                <textarea id="new_gudongqingkuang" v-model="new_gudongqingkuang" placeholder="主要股东姓名及持股比例"></textarea>
-              </div>
-            </div>
-          </div>
-
+          <!-- 个人信息 -->
           <div class="form-section">
-            <h3>申请人（实控人）情况</h3>
+            <h3>个人信息</h3>
             <div class="form-grid">
-              <div class="form-item">
-                <label for="new_shikongrenxingming">(new)实控人姓名:</label>
-                <input type="text" id="new_shikongrenxingming" v-model="new_shikongrenxingming" placeholder="请输入姓名" />
-              </div>
-
-              <div class="form-item">
-                <label for="new_jiguan">(new)籍贯:</label>
-                <input type="text" id="new_jiguan" v-model="new_jiguan" placeholder="省/市" />
-              </div>
-
-              <div class="form-item">
-                <label for="new_chushengriqi">(new)出生日期:</label>
-                <input type="date" id="new_chushengriqi" v-model="new_chushengriqi" />
-              </div>
-
-              <div class="form-item">
-                <label for="new_hangyefuwunianxian">(new)行业服务年限:</label>
-                <input type="number" id="new_hangyefuwunianxian" v-model="new_hangyefuwunianxian" placeholder="年" />
-              </div>
-
-              <div class="form-item">
-                <label for="new_peiouxingming">(new)配偶姓名:</label>
-                <input type="text" id="new_peiouxingming" v-model="new_peiouxingming" placeholder="未婚可不填" />
-              </div>
-
               <div class="form-item">
                 <label for="controller_gender">实控人性别:</label>
                 <select id="controller_gender" v-model="controller_gender">
@@ -126,7 +59,6 @@
                   <option value="0">女</option>
                 </select>
               </div>
-
               <div class="form-item">
                 <label for="education_level">实控人文化程度:</label>
                 <select id="education_level" v-model="education_level">
@@ -142,7 +74,6 @@
                   <option value="7">博士后</option>
                 </select>
               </div>
-
               <div class="form-item">
                 <label for="marital_status">婚姻状态:</label>
                 <select id="marital_status" v-model="marital_status">
@@ -152,7 +83,6 @@
                   <option value="3">丧偶</option>
                 </select>
               </div>
-
               <div class="form-item">
                 <label for="residence_type">居住场所类型:</label>
                 <select id="residence_type" v-model="residence_type">
@@ -160,287 +90,9 @@
                   <option value="1">租赁</option>
                 </select>
               </div>
-
               <div class="form-item">
                 <label for="local_residence_years">本地居住时间:</label>
                 <input type="number" id="local_residence_years" v-model="local_residence_years" placeholder="年" />
-              </div>
-              <div class="form-item">
-                <label for="family_harmony">家庭关系是否和睦:</label>
-                <select id="family_harmony" v-model="family_harmony">
-                  <option value="1">是</option>
-                  <option value="0">否</option>
-                </select>
-              </div>
-              <div class="form-item">
-                <label for="minor_children">孩子（未成年）人数:</label>
-                <input type="number" id="minor_children" v-model="minor_children" placeholder="人" />
-              </div>
-              <div class="form-item">
-                <label for="adult_family_members">家庭成年人数:</label>
-                <input type="number" id="adult_family_members" v-model="adult_family_members" placeholder="人" />
-              </div>
-              <div class="form-item">
-                <label for="working_family_members">家庭参与劳动的人数:</label>
-                <input type="number" id="working_family_members" v-model="working_family_members" placeholder="人" />
-              </div>
-              <div class="form-item">
-                <label for="family_social_relations">家庭成员及情况:</label>
-                <textarea id="family_social_relations" v-model="family_social_relations" rows="4"></textarea>
-              </div>
-            </div>
-            
-          </div>
-          <!-- 三、经营模式及场所 -->
-          <div class="form-section">
-            <h3>三、经营模式及场所</h3>
-            </div>
-            <div class="table-wrapper">
-              <table class="site-table">
-                <thead>
-                  <tr>
-                    <th>序号</th>
-                    <th>地址</th>
-                    <th>建筑面积</th>
-                    <th>土地面积</th>
-                    <th>自有/租赁</th>
-                    <th>操作</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="(row, idx) in siteRows" :key="idx">
-                    <td>{{ idx + 1 }}</td>
-                    <td><input v-model="row.address" type="text" placeholder="地址" /></td>
-                    <td><input v-model="row.buildingArea" type="number" placeholder="㎡" /></td>
-                    <td><input v-model="row.landArea" type="number" placeholder="㎡" /></td>
-                    <td>
-                      <select v-model="row.ownership">
-                        <option value="自有">自有</option>
-                        <option value="租赁">租赁</option>
-                      </select>
-                    </td>
-                    <td>
-                      <button type="button" class="link-btn" @click="removeSiteRow(idx)" v-if="siteRows.length > 1">删除</button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-              <div class="table-actions">
-                <button type="button" class="add-btn" @click="addSiteRow">+ 新增一行</button>
-              </div>
-            </div>
-            <div class="form-grid">
-              <div class="form-item">
-                <label for="business_model_desc">经营模式概述:</label>
-                <textarea id="business_model_desc" v-model="business_model_desc" rows="3" placeholder="简要说明经营模式、主要销售渠道等"></textarea>
-              </div>
-          </div>
-
-
-          <!-- 四、资信状况 -->
-          <div class="form-section">
-            <h3>四、资信状况</h3>
-            <h4>1、银行月末余额（近一年）</h4>
-            </div>
-            <div class="table-wrapper">
-              <table class="site-table">
-                <thead>
-                  <tr>
-                    <th>序号</th>
-                    <th>账户</th>
-                    <th>账号</th>
-                    <th>操作</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="(row, idx) in bankRows" :key="idx">
-                    <td>{{ idx + 1 }}</td>
-                    <td><input v-model="row.account" type="text" placeholder="" /></td>
-                    <td><input v-model="row.accountNo" type="text" placeholder="" /></td>
-
-                    <td>
-                      <button type="button" class="link-btn" @click="removeBankRow(idx)" v-if="bankRows.length > 1">删除</button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-              <div class="table-actions">
-                <button type="button" class="add-btn" @click="addBankRow">+ 新增一行</button>
-              </div>
-            </div>
-
-          <div class="table-wrapper">
-            <table class="credit-table">
-              <thead>
-                <tr>
-                  <th>时间</th>
-                  <th v-for="m in monthsList" :key="'m'+m">{{ m }}月</th>
-                  <th>月均</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td><input v-model="bankBalance.time" placeholder="如：余额" /></td>
-                  <td v-for="(val, idx) in bankBalance.months" :key="'bm'+idx">
-                    <input v-model="bankBalance.months[idx]" type="number" placeholder="数值" />
-                  </td>
-                  <td><input v-model="bankBalance.avg" type="number" placeholder="月均" /></td>
-                </tr>
-              </tbody>
-            </table>
-            <div class="form-grid">
-              <div class="form-item">
-                <label for="buchong">补充:</label>
-                <textarea id="buchong" v-model="buchong" rows="3" placeholder=""></textarea>
-              </div>
-            </div>
-          </div>
-
-
-
-
-          <div class="form-section">
-            <h4>2、现有贷款情况</h4>
-            <div class="table-wrapper">
-              <table class="site-table">
-                <thead>
-                  <tr>
-                    <th>序号</th>
-                    <th>业务品种</th>
-                    <th>贷款金额</th>
-                    <th>贷款余额</th>
-                    <th>担保方式</th>
-                    <th>开始日期</th>
-                    <th>终止日期</th>
-                    <th>合作银行</th>
-                    <th>备注</th>
-                    <th>操作</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="(row, idx) in loanRows" :key="idx">
-                    <td>{{ idx + 1 }}</td>
-                    <td><input v-model="row.bizType" type="text" placeholder="业务品种" /></td>
-                    <td><input v-model="row.loanAmount" type="number" placeholder="万元" /></td>
-                    <td><input v-model="row.loanBalance" type="number" placeholder="万元" /></td>
-                    <td><input v-model="row.guaranteeType" type="text" placeholder="担保方式" /></td>
-                    <td><input v-model="row.startDate" type="date" /></td>
-                    <td><input v-model="row.endDate" type="date" /></td>
-                    <td><input v-model="row.bank" type="text" placeholder="合作银行" /></td>
-                    <td><input v-model="row.remark" type="text" placeholder="备注" /></td>
-                    <td><button type="button" class="link-btn" @click="removeLoanRow(idx)" v-if="loanRows.length > 1">删除</button></td>
-                  </tr>
-                </tbody>
-                <tfoot>
-                  <tr>
-                    <td colspan="2" style="text-align: right; font-weight: 600;">合计</td>
-                    <td>{{ totalLoanAmount }}</td>
-                    <td>{{ totalLoanBalance }}</td>
-                    <td colspan="6"></td>
-                  </tr>
-                </tfoot>
-              </table>
-              <div class="table-actions">
-                <button type="button" class="add-btn" @click="addLoanRow">+ 新增一行</button>
-              </div>
-            </div>
-
-          </div>
-
-
-
-          <div class="form-section">
-            <h3>五、电费情况：</h3>
-            <div class="table-wrapper">
-              <table class="credit-table">
-                <thead>
-                  <tr>
-                    <th>时间</th>
-                    <th v-for="m in monthsList" :key="'em'+m">{{ m }}月</th>
-                    <th>合计</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td><input v-model="electricityBalance.time" placeholder="如：电费" /></td>
-                    <td v-for="(val, idx) in electricityBalance.months" :key="'eb'+idx">
-                      <input v-model="electricityBalance.months[idx]" type="number" placeholder="数值" />
-                    </td>
-                    <td><input v-model="electricityBalance.total" type="number" placeholder="合计" /></td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            <div class="form-grid">
-              <div class="form-item">
-                <label for="electricity_comment">电费情况补充:</label>
-                <textarea id="electricity_comment" v-model="electricity_comment" rows="3" placeholder="补充说明电费情况"></textarea>
-              </div>
-            </div>
-          </div>
-
-          <div class="form-section">
-            <h3>六、评价及结论</h3>
-            <div class="form-grid">
-              <div class="form-item">
-                <label for="receivable_sales_ratio">应收款与年营业额对比%:</label>
-                <input id="receivable_sales_ratio" type="number" v-model="receivable_sales_ratio" placeholder="%" />
-              </div>
-              <div class="form-item">
-                <label for="inventory_sales_ratio">存货与年营业额对比%:</label>
-                <input id="inventory_sales_ratio" type="number" v-model="inventory_sales_ratio" placeholder="%" />
-              </div>
-              <div class="form-item">
-                <label for="asset_debt_ratio_eval">资产负债率%:</label>
-                <input id="asset_debt_ratio_eval" type="number" v-model="asset_debt_ratio" placeholder="%" />
-              </div>
-              <div class="form-item">
-                <label for="total_assets_eval">总资产:</label>
-                <input id="total_assets_eval" type="number" v-model="total_assets" placeholder="万元" />
-              </div>
-              <div class="form-item">
-                <label for="total_liabilities_eval">总负债:</label>
-                <input id="total_liabilities_eval" type="number" v-model="total_liabilities" placeholder="万元" />
-              </div>
-              <div class="form-item">
-                <label for="net_assets_eval">净资产:</label>
-                <input id="net_assets_eval" type="number" v-model="net_assets" placeholder="万元" />
-              </div>
-              <div class="form-item">
-                <label for="profit_usage_eval">利润去向:</label>
-                <textarea id="profit_usage_eval" v-model="profit_usage" rows="3" placeholder="利润去向说明"></textarea>
-              </div>
-              <div class="form-item">
-                <label for="soft_info_analysis">软信息分析:</label>
-                <textarea id="soft_info_analysis" v-model="soft_info_analysis" rows="3" placeholder="软信息分析"></textarea>
-              </div>
-              <div class="form-item">
-                <label for="limit_assessment">额度测定:</label>
-                <input id="limit_assessment" type="number" v-model="limit_assessment" placeholder="万元" />
-              </div>
-              <div class="form-item">
-                <label for="repayment_income_ratio_eval">月还款额/月可支配收入:</label>
-                <input id="repayment_income_ratio_eval" type="number" v-model="repayment_income_ratio" placeholder="比例" />
-              </div>
-            </div>
-          </div>
-            
-          <div class="form-section">
-            <h4>3、征信及对外担保情况：</h4>
-            <div class="form-grid">
-              <div class="form-item">
-                <label for="credit_guarantee_info">征信及对外担保情况:</label>
-                <textarea id="credit_guarantee_info" v-model="credit_guarantee_info" rows="3" placeholder="描述征信记录、对外担保等情况"></textarea>
-              </div>
-            </div>
-          </div>
-
-          <div class="form-section">
-            <h4>4、诉讼情况:</h4>
-            <div class="form-grid">
-              <div class="form-item">
-                <label for="litigation_info">诉讼情况:</label>
-                <textarea id="litigation_info" v-model="litigation_info" rows="3" placeholder="描述涉诉、仲裁、执行等情况"></textarea>
               </div>
             </div>
           </div>
@@ -482,7 +134,10 @@
                   <option value="0">否</option>
                 </select>
               </div>
-
+              <div class="form-item">
+                <label for="employee_count">企业雇佣人数:</label>
+                <input type="number" id="employee_count" v-model="employee_count" placeholder="人" />
+              </div>
               <div class="form-item">
                 <label for="business_premises_type">经营场所类型:</label>
                 <select id="business_premises_type" v-model="business_premises_type">
@@ -596,7 +251,25 @@
           <div class="form-section">
             <h3>家庭信息</h3>
             <div class="form-grid">
-
+              <div class="form-item">
+                <label for="family_harmony">家庭关系是否和睦:</label>
+                <select id="family_harmony" v-model="family_harmony">
+                  <option value="1">是</option>
+                  <option value="0">否</option>
+                </select>
+              </div>
+              <div class="form-item">
+                <label for="minor_children">孩子（未成年）人数:</label>
+                <input type="number" id="minor_children" v-model="minor_children" placeholder="人" />
+              </div>
+              <div class="form-item">
+                <label for="adult_family_members">家庭成年人数:</label>
+                <input type="number" id="adult_family_members" v-model="adult_family_members" placeholder="人" />
+              </div>
+              <div class="form-item">
+                <label for="working_family_members">家庭参与劳动的人数:</label>
+                <input type="number" id="working_family_members" v-model="working_family_members" placeholder="人" />
+              </div>
             </div>
           </div>
 
@@ -711,7 +384,10 @@
                 <label for="education_work_experience">学习及工作经历:</label>
                 <textarea id="education_work_experience" v-model="education_work_experience" rows="4"></textarea>
               </div>
-
+              <div class="form-item">
+                <label for="family_social_relations">家庭成员及情况:</label>
+                <textarea id="family_social_relations" v-model="family_social_relations" rows="4"></textarea>
+              </div>
               <div class="form-item">
                 <label for="business_model">商业模式:</label>
                 <textarea id="business_model" v-model="business_model" rows="4"></textarea>
@@ -751,7 +427,7 @@
 </template>
   
 <script setup>
-import { ref, computed } from "vue";
+import { ref } from "vue";
 import axios from "axios";
 import { Form, InputNumber, Button } from "ant-design-vue";
 import { ExclamationCircleFilled } from "@ant-design/icons-vue";
@@ -759,14 +435,6 @@ import { ElMessage } from "element-plus";
 
 //创建列表
 const predictions = ref([]);
-// 经营模式及场所
-const business_model_desc = ref('');
-const siteRows = ref([{
-  address: '',
-  buildingArea: '',
-  landArea: '',
-  ownership: '自有',
-}]);
 
 //输入框初始化
 const project_number = ref('');
@@ -843,42 +511,6 @@ const movable_mortgage = ref('');
 const other_collateral = ref('');
 const is_growth_stage = ref('0');
 const used_youdaibao = ref('0');
-const bankRows = ref([{ account: '', accountNo: '' }]);
-const bankBalance = ref({ time: '', months: Array(12).fill(''), avg: '' });
-const monthsList = [1,2,3,4,5,6,7,8,9,10,11,12];
-const electricityBalance = ref({ time: '', months: Array(12).fill(''), total: '' });
-const electricity_comment = ref('');
-const receivable_sales_ratio = ref('');
-const inventory_sales_ratio = ref('');
-const soft_info_analysis = ref('');
-const limit_assessment = ref('');
-const loanRows = ref([{
-  bizType: '',
-  loanAmount: '',
-  loanBalance: '',
-  guaranteeType: '',
-  startDate: '',
-  endDate: '',
-  bank: '',
-  remark: '',
-}]);
-
-const credit_guarantee_info = ref('');
-const litigation_info = ref('');
-
-const totalLoanAmount = computed(() => {
-  return loanRows.value.reduce((sum, row) => {
-    const val = parseFloat(row.loanAmount);
-    return sum + (isNaN(val) ? 0 : val);
-  }, 0);
-});
-
-const totalLoanBalance = computed(() => {
-  return loanRows.value.reduce((sum, row) => {
-    const val = parseFloat(row.loanBalance);
-    return sum + (isNaN(val) ? 0 : val);
-  }, 0);
-});
 
 // 暂存/恢复用：统一收集表单字段
 const DRAFT_KEY = "vis_form_draft";
@@ -957,60 +589,7 @@ const formFields = {
   other_collateral,
   is_growth_stage,
   used_youdaibao,
-  business_model_desc,
-  siteRows,
-  loanRows,
-  credit_guarantee_info,
-  litigation_info,
-  bankRows,
-  bankBalance,
-  electricityBalance,
-  electricity_comment,
-  receivable_sales_ratio,
-  inventory_sales_ratio,
-  soft_info_analysis,
-  limit_assessment,
 };
-
-const addSiteRow = () => {
-  siteRows.value.push({
-    address: '',
-    buildingArea: '',
-    landArea: '',
-    ownership: '自有',
-  });
-};
-
-const removeSiteRow = (idx) => {
-  siteRows.value.splice(idx, 1);
-};
-
-const addBankRow = () => {
-  bankRows.value.push({ account: '', accountNo: '' });
-};
-
-const removeBankRow = (idx) => {
-  bankRows.value.splice(idx, 1);
-};
-
-const addLoanRow = () => {
-  loanRows.value.push({
-    bizType: '',
-    loanAmount: '',
-    loanBalance: '',
-    guaranteeType: '',
-    startDate: '',
-    endDate: '',
-    bank: '',
-    remark: '',
-  });
-};
-
-const removeLoanRow = (idx) => {
-  loanRows.value.splice(idx, 1);
-};
-
-// 银行月末余额表格数据
 
 const saveDraft = () => {
   const draft = {};
@@ -1427,21 +1006,14 @@ const predictContent = async () => {
           equipment_mortgage: equipment_mortgage.value,
           is_growth_stage: is_growth_stage.value,
           used_youdaibao: used_youdaibao.value,
-          education_work_experience: education_work_experience.value,
-          family_social_relations: family_social_relations.value,
+      education_work_experience: education_work_experience.value,
+      family_social_relations: family_social_relations.value,
           business_model: business_model.value,
           counter_guarantee: counter_guarantee.value,
           main_business: main_business.value,
           profit_usage: profit_usage.value,
           other_soft_info: other_soft_info.value,
           loan_purpose: loan_purpose.value,
-          credit_guarantee_info: credit_guarantee_info.value,
-          litigation_info: litigation_info.value,
-          electricity_comment: electricity_comment.value,
-          receivable_sales_ratio: receivable_sales_ratio.value,
-          inventory_sales_ratio: inventory_sales_ratio.value,
-          soft_info_analysis: soft_info_analysis.value,
-          limit_assessment: limit_assessment.value,
           predicted: predictedAmount,
           prediction_text: predictionText.value, // 添加预测结果文本
           created_by: localStorage.getItem("username") || ""
@@ -1576,13 +1148,6 @@ const saveWithoutPredict = async () => {
       profit_usage: profit_usage.value,
       other_soft_info: other_soft_info.value,
       loan_purpose: loan_purpose.value,
-      credit_guarantee_info: credit_guarantee_info.value,
-      litigation_info: litigation_info.value,
-      electricity_comment: electricity_comment.value,
-      receivable_sales_ratio: receivable_sales_ratio.value,
-      inventory_sales_ratio: inventory_sales_ratio.value,
-      soft_info_analysis: soft_info_analysis.value,
-      limit_assessment: limit_assessment.value,
       predicted: predictedAmount,
       prediction_text: "",
       created_by: localStorage.getItem("username") || "",
@@ -1785,22 +1350,6 @@ const saveWithoutPredict = async () => {
   margin-bottom: 10px;
 }
 
-.credit-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.credit-table th,
-.credit-table td {
-  border: 1px solid #ddd;
-  padding: 6px 8px;
-  text-align: left;
-}
-
-.credit-table th {
-  background: #f7f7f7;
-}
-
 .loading-container {
   display: flex;
   flex-direction: column;
@@ -1836,41 +1385,4 @@ const saveWithoutPredict = async () => {
   50% { opacity: 1; }
   100% { opacity: 0.6; }
 }
-.table-wrapper {
-  margin-top: 10px;
-}
-
-.site-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.site-table th,
-.site-table td {
-  border: 1px solid #ddd;
-  padding: 8px;
-  text-align: left;
-}
-
-.site-table th {
-  background: #f7f7f7;
-}
-
-.table-actions {
-  margin-top: 8px;
-}
-
-.add-btn,
-.link-btn {
-  background: none;
-  border: none;
-  color: #1677ff;
-  cursor: pointer;
-}
-
-.add-btn:hover,
-.link-btn:hover {
-  text-decoration: underline;
-}
-
 </style>
