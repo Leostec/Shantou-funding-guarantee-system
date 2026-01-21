@@ -409,63 +409,44 @@ const cleanLabel = (label: string) => {
   return label.replace(/（.*?）|\(.*?\)/g, '').trim();
 };
 
-const downloadRecord = (record: RecordItem) => {
-  const entries = getDisplayEntries(record);
-  const basicKeys = new Set([
-    'project_number',
-    'company_name',
-    'project_manager',
-    'application_amount',
-    'application_period',
-    'repayment_method',
-    'created_by',
-    'created_at',
-  ]);
-  const basic = entries.filter((e) => basicKeys.has(e.key));
-  const others = entries.filter((e) => !basicKeys.has(e.key));
+const downloadRecord = async (record: RecordItem) => {
+  const id = record.id || record.project_number;
+  if (!id) {
+    message.error('缺少记录ID，无法下载');
+    return;
+  }
 
-  const buildTable = (items: { label: string; value: any }[]) =>
-    items
-      .map(
-        (item) =>
-          `<tr><td class="label">${cleanLabel(item.label)}</td><td class="value">${formatDisplayValue(
-            item.key,
-            item.value
-          )}</td></tr>`
-      )
-      .join('');
+  try {
+    const response = await axios.get('http://127.0.0.1:5000/download-report', {
+      params: { id },
+      responseType: 'blob',
+    });
 
-  const html = `
-    <html>
-      <head>
-        <meta charset="UTF-8" />
-        <style>
-          body { font-family: "Microsoft YaHei", sans-serif; padding: 20px; }
-          h1 { text-align: center; }
-          h2 { margin-top: 24px; }
-          table { width: 100%; border-collapse: collapse; margin-top: 8px; }
-          td { border: 1px solid #999; padding: 6px 10px; }
-          td.label { width: 30%; background: #f7f7f7; font-weight: 600; }
-        </style>
-      </head>
-      <body>
-        <h1>评审报告</h1>
-        <h2>基础信息</h2>
-        <table>${buildTable(basic)}</table>
-        <h2>详细信息</h2>
-        <table>${buildTable(others)}</table>
-      </body>
-    </html>
-  `;
+    const contentDisposition = response.headers['content-disposition'] || '';
+    let filename = `${record.project_number || 'report'}-report.docx`;
+    const match = /filename\*=UTF-8''([^;]+)|filename=\"?([^\";]+)\"?/i.exec(contentDisposition);
+    if (match) {
+      const rawName = match[1] || match[2];
+      if (rawName) {
+        filename = decodeURIComponent(rawName);
+      }
+    }
 
-  const blob = new Blob([html], { type: 'application/msword' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  const filename = `${record.project_number || 'report'}-report.doc`;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
+    const blob = new Blob([response.data], {
+      type:
+        response.headers['content-type'] ||
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  } catch (error: any) {
+    console.error('下载失败', error);
+    message.error(error?.response?.data?.message || '下载失败');
+  }
 };
 </script>
 
@@ -531,3 +512,4 @@ const downloadRecord = (record: RecordItem) => {
   overflow-y: auto;
 }
 </style>
+

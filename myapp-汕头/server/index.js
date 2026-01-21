@@ -20,83 +20,282 @@ const conn = mysql.createConnection({
 const queryAsync = util.promisify(conn.query).bind(conn);
 
 // 建表：loan_application
-const createTableSQL = `
+const createLoanApplicationTableSQL = `
 CREATE TABLE IF NOT EXISTS loan_application (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    project_number VARCHAR(50),
-    company_name VARCHAR(100),
-    project_manager VARCHAR(50),
-    application_amount DECIMAL(15,2),
-    application_period INT,
-    repayment_method DECIMAL(15,2),
-    controller_gender TINYINT,
-    education_level DECIMAL(3,1),
-    marital_status TINYINT,
-    residence_type TINYINT,
-    local_residence_years INT,
-    industry_category TINYINT,
-    industry_experience INT,
-    is_foreign_trade TINYINT,
-    is_cautious_industry TINYINT,
-    employee_count INT,
-    business_premises_type TINYINT,
-    monthly_rent DECIMAL(15,2),
-    monthly_balance DECIMAL(15,2),
-    daily_balance DECIMAL(15,2),
-    electricity_consumption DECIMAL(15,2),
-    cash_at_meeting DECIMAL(15,2),
-    receivables_at_meeting DECIMAL(15,2),
-    inventory_at_meeting DECIMAL(15,2),
-    payables_at_meeting DECIMAL(15,2),
-    total_assets DECIMAL(15,2),
-    total_liabilities DECIMAL(15,2),
-    net_assets DECIMAL(15,2),
-    annual_sales DECIMAL(15,2),
-    annual_net_profit DECIMAL(15,2),
-    monthly_net_profit DECIMAL(15,2),
-    core_assets DECIMAL(15,2),
-    hard_liabilities DECIMAL(15,2),
-    operating_liabilities DECIMAL(15,2),
-    sales_debt_ratio DECIMAL(5,2),
-    asset_debt_ratio DECIMAL(5,2),
-    monthly_repayment DECIMAL(15,2),
-    total_monthly_repayment DECIMAL(15,2),
-    repayment_income_ratio DECIMAL(5,2),
-    average_payment_period INT,
-    family_harmony TINYINT,
-    minor_children INT,
-    adult_family_members INT,
-    working_family_members INT,
-    credit_inquiries INT,
-    overdue_times INT,
-    max_overdue_amount DECIMAL(15,2),
-    bank_inflow DECIMAL(15,2),
-    bank_outflow DECIMAL(15,2),
-    highest_flow_month VARCHAR(7),
-    lowest_flow_month VARCHAR(7),
-    company_guarantee TEXT,
-    personal_guarantee TEXT,
-    additional_guarantor TINYINT,
-    property_mortgage DECIMAL(15,2),
-    property_second_mortgage DECIMAL(15,2),
-    equipment_mortgage DECIMAL(15,2),
-    is_growth_stage TINYINT,
-    used_youdaibao TINYINT,
-    education_work_experience TEXT,
-    family_social_relations TEXT,
-    business_model TEXT,
-    counter_guarantee TEXT,
-    main_business TEXT,
-    profit_usage TEXT,
-    other_soft_info TEXT,
-    loan_purpose TEXT,
-    predicted TINYINT,
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    project_a_owner VARCHAR(100),
+    project_b_owner VARCHAR(100),
+    project_market_manager VARCHAR(100),
+    project_source VARCHAR(200),
+    project_coop_bank VARCHAR(200),
+    project_apply_date DATE,
+    project_enterpriseid VARCHAR(100),
+    loan_borrower_name VARCHAR(200),
+    loan_apply_amount DECIMAL(18,2),
+    loan_apply_term INT,
+    loan_purpose_detail TEXT,
+    company_name VARCHAR(200),
+    company_registered_capital DECIMAL(18,2),
+    company_established_date DATE,
+    company_registered_address VARCHAR(300),
+    company_main_business TEXT,
+    company_employee_count INT,
+    company_is_salary VARCHAR(10),
+    company_shareholder_info TEXT,
+    controller_name VARCHAR(100),
+    controller_gender VARCHAR(10),
+    controller_native_place VARCHAR(100),
+    controller_marital_status VARCHAR(20),
+    controller_birth_date DATE,
+    controller_service_years INT,
+    controller_education VARCHAR(50),
+    controller_spouse_name VARCHAR(100),
+    controller_career_experience TEXT,
+    family_members_info TEXT,
+    family_is_hemu VARCHAR(10),
+    family_annual_expense DECIMAL(18,2),
+    social_relationship_info TEXT,
+    residence_type VARCHAR(50),
+    residence_years INT,
+    residence_address VARCHAR(300),
+    business_type VARCHAR(100),
+    business_month_pay DECIMAL(18,2),
+    business_is_pay VARCHAR(10),
+    business_model_description TEXT,
+    business_is_waimao VARCHAR(10),
+    business_is_jinshen VARCHAR(10),
+    credit_inquiry_count INT,
+    credit_adverse_info TEXT,
+    credit_overdue_count INT,
+    credit_max_overdue_amount DECIMAL(18,2),
+    litigation_status TEXT,
+    electricity_is_quantity VARCHAR(10),
+    electricity_is_cost VARCHAR(10),
+    electricity_descript TEXT,
+    analysis_plan_amount DECIMAL(18,2),
+    analysis_plan_term INT,
+    analysis_plan_repayment_method VARCHAR(100),
+    analysis_plan_fee_rate DECIMAL(18,4),
+    analysis_plan_corp_guarantee VARCHAR(10),
+    analysis_plan_personal_guarantee VARCHAR(10),
+    analysis_plan_collateral VARCHAR(200),
+    analysis_plan_diyapingguzhi DECIMAL(18,2),
+    analysis_plan_eryayuzhi DECIMAL(18,2),
+    analysis_plan_diyajingzhi DECIMAL(18,2),
+    analysis_fin_total_assets DECIMAL(18,2),
+    analysis_fin_total_liabilities DECIMAL(18,2),
+    analysis_fin_net_assets DECIMAL(18,2),
+    analysis_fin_revenue DECIMAL(18,2),
+    analysis_fin_net_income DECIMAL(18,2),
+    analysis_ind_asset_debt_ratio DECIMAL(10,4),
+    analysis_ind_sales_debt_ratio DECIMAL(10,4),
+    analysis_ind_meets_3x_income VARCHAR(10),
+    analysis_ind_receivable_days INT,
+    analysis_ind_avg_balance DECIMAL(18,2),
+    analysis_ind_repayment_ratio DECIMAL(10,4),
+    analysis_ind_is_superior_loan VARCHAR(10),
+    analysis_ind_is_growth_phase VARCHAR(10),
+    analysis_ind_is_added_guarantor VARCHAR(10),
+    analysis_soft_info TEXT,
+    analysis_summary TEXT,
+    analysis_limit_calculation TEXT,
+    analysis_limit_apply_amount DECIMAL(18,2),
+    analysis_limit_increase_factors TEXT,
+    bs_date DATE,
+    bs_cash DECIMAL(18,2),
+    bs_ar DECIMAL(18,2),
+    bs_prepayments DECIMAL(18,2),
+    bs_other_ar DECIMAL(18,2),
+    bs_inventory DECIMAL(18,2),
+    bs_fixed_assets DECIMAL(18,2),
+    bs_total_assets DECIMAL(18,2),
+    bs_loans DECIMAL(18,2),
+    bs_ap DECIMAL(18,2),
+    bs_advances DECIMAL(18,2),
+    bs_other_ap DECIMAL(18,2),
+    bs_capital DECIMAL(18,2),
+    bs_retained_earnings DECIMAL(18,2),
+    bs_total_liabilities_equity DECIMAL(18,2),
+    asset_totals_buy_price DECIMAL(18,2),
+    asset_totals_current_value DECIMAL(18,2),
+    asset_totals_depreciation DECIMAL(18,2),
+    is_table_year VARCHAR(20),
+    is_table_s1_t VARCHAR(100),
+    is_table_s2_t VARCHAR(100),
+    is_table_s3_t VARCHAR(100),
+    is_table_s1 DECIMAL(18,2),
+    is_table_s2 DECIMAL(18,2),
+    is_table_s3 DECIMAL(18,2),
+    is_table_s_total DECIMAL(18,2),
+    is_table_material_cost DECIMAL(18,2),
+    is_table_gross_profit DECIMAL(18,2),
+    is_table_f_wages DECIMAL(18,2),
+    is_table_f_rent DECIMAL(18,2),
+    is_table_f_utility DECIMAL(18,2),
+    is_table_f_comm DECIMAL(18,2),
+    is_table_f_trans DECIMAL(18,2),
+    is_table_f_loss DECIMAL(18,2),
+    is_table_f_adv DECIMAL(18,2),
+    is_table_f_entertain DECIMAL(18,2),
+    is_table_f_tax DECIMAL(18,2),
+    is_table_f_other DECIMAL(18,2),
+    is_table_f_total DECIMAL(18,2),
+    is_table_net_profit DECIMAL(18,2),
+    is_table_o_family_exp DECIMAL(18,2),
+    is_table_o_biz_loan DECIMAL(18,2),
+    is_table_o_pvt_loan DECIMAL(18,2),
+    is_table_o_other_exp DECIMAL(18,2),
+    is_table_o_family_inc DECIMAL(18,2),
+    is_table_annual_net_income DECIMAL(18,2),
+    rev_check_total_value DECIMAL(18,2),
+    rev_check_est_total DECIMAL(18,2),
+    rev_check_is_revenue DECIMAL(18,2),
+    rev_check_diff_rate DECIMAL(10,4),
+    rev_check_method VARCHAR(200),
+    business_sites_json JSON,
+    business_accounts_json JSON,
+    account_rows_json JSON,
+    daily_avg_balance_json JSON,
+    guarantees_json JSON,
+    guarantees_amount_total DECIMAL(18,2),
+    guarantees_balance_total DECIMAL(18,2),
+    existing_loans_json JSON,
+    electricity_items_json JSON,
+    asset_stats_json JSON,
+    rev_check_items_json JSON,
+    cashflow_in_json JSON,
+    cashflow_out_json JSON,
+    predicted DECIMAL(18,2),
     prediction_text TEXT,
     expert_opinion TEXT,
-    expert_amount DECIMAL(15,2),
-    created_by VARCHAR(100),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-)`;
+    expert_amount DECIMAL(18,2),
+    created_by VARCHAR(100)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`;
+
+const createBusinessSitesTableSQL = `
+CREATE TABLE IF NOT EXISTS business_sites (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    application_id BIGINT NOT NULL,
+    address VARCHAR(300),
+    building_area DECIMAL(18,2),
+    land_area DECIMAL(18,2),
+    ownership VARCHAR(50),
+    FOREIGN KEY (application_id) REFERENCES loan_application(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`;
+
+const createBusinessAccountsTableSQL = `
+CREATE TABLE IF NOT EXISTS business_accounts (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    application_id BIGINT NOT NULL,
+    account_name VARCHAR(200),
+    account_no VARCHAR(100),
+    FOREIGN KEY (application_id) REFERENCES loan_application(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`;
+
+const createAccountRowsTableSQL = `
+CREATE TABLE IF NOT EXISTS account_rows (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    application_id BIGINT NOT NULL,
+    year VARCHAR(10),
+    m1 DECIMAL(18,2), m2 DECIMAL(18,2), m3 DECIMAL(18,2), m4 DECIMAL(18,2),
+    m5 DECIMAL(18,2), m6 DECIMAL(18,2), m7 DECIMAL(18,2), m8 DECIMAL(18,2),
+    m9 DECIMAL(18,2), m10 DECIMAL(18,2), m11 DECIMAL(18,2), m12 DECIMAL(18,2),
+    avg DECIMAL(18,2),
+    FOREIGN KEY (application_id) REFERENCES loan_application(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`;
+
+const createDailyAvgBalanceTableSQL = `
+CREATE TABLE IF NOT EXISTS daily_avg_balance (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    application_id BIGINT NOT NULL,
+    year VARCHAR(10),
+    m3 DECIMAL(18,2),
+    m6 DECIMAL(18,2),
+    m9 DECIMAL(18,2),
+    m12 DECIMAL(18,2),
+    annual_avg DECIMAL(18,2),
+    FOREIGN KEY (application_id) REFERENCES loan_application(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`;
+
+const createGuaranteesTableSQL = `
+CREATE TABLE IF NOT EXISTS guarantees (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    application_id BIGINT NOT NULL,
+    type VARCHAR(100),
+    amount DECIMAL(18,2),
+    balance DECIMAL(18,2),
+    counter_guarantee VARCHAR(200),
+    monthly_payment DECIMAL(18,2),
+    start_date DATE,
+    end_date DATE,
+    bank_rate VARCHAR(100),
+    purpose VARCHAR(200),
+    FOREIGN KEY (application_id) REFERENCES loan_application(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`;
+
+const createExistingLoansTableSQL = `
+CREATE TABLE IF NOT EXISTS existing_loans (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    application_id BIGINT NOT NULL,
+    type VARCHAR(100),
+    amount DECIMAL(18,2),
+    balance DECIMAL(18,2),
+    mode VARCHAR(100),
+    monthly_payment DECIMAL(18,2),
+    start_date DATE,
+    end_date DATE,
+    bank_rate VARCHAR(100),
+    purpose VARCHAR(200),
+    FOREIGN KEY (application_id) REFERENCES loan_application(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`;
+
+const createElectricityItemsTableSQL = `
+CREATE TABLE IF NOT EXISTS electricity_items (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    application_id BIGINT NOT NULL,
+    year VARCHAR(10),
+    m1 DECIMAL(18,2), m2 DECIMAL(18,2), m3 DECIMAL(18,2), m4 DECIMAL(18,2),
+    m5 DECIMAL(18,2), m6 DECIMAL(18,2), m7 DECIMAL(18,2), m8 DECIMAL(18,2),
+    m9 DECIMAL(18,2), m10 DECIMAL(18,2), m11 DECIMAL(18,2), m12 DECIMAL(18,2),
+    total DECIMAL(18,2),
+    FOREIGN KEY (application_id) REFERENCES loan_application(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`;
+
+const createAssetStatsTableSQL = `
+CREATE TABLE IF NOT EXISTS asset_stats (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    application_id BIGINT NOT NULL,
+    name VARCHAR(200),
+    buy_time DATE,
+    buy_price DECIMAL(18,2),
+    current_value DECIMAL(18,2),
+    depreciation DECIMAL(18,2),
+    remark VARCHAR(200),
+    FOREIGN KEY (application_id) REFERENCES loan_application(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`;
+
+const createRevCheckItemsTableSQL = `
+CREATE TABLE IF NOT EXISTS rev_check_items (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    application_id BIGINT NOT NULL,
+    name VARCHAR(200),
+    value DECIMAL(18,2),
+    FOREIGN KEY (application_id) REFERENCES loan_application(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`;
+
+const createCashflowItemsTableSQL = `
+CREATE TABLE IF NOT EXISTS cashflow_items (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    application_id BIGINT NOT NULL,
+    direction ENUM('in','out') NOT NULL,
+    year VARCHAR(10),
+    m1 DECIMAL(18,2), m2 DECIMAL(18,2), m3 DECIMAL(18,2), m4 DECIMAL(18,2),
+    m5 DECIMAL(18,2), m6 DECIMAL(18,2), m7 DECIMAL(18,2), m8 DECIMAL(18,2),
+    m9 DECIMAL(18,2), m10 DECIMAL(18,2), m11 DECIMAL(18,2), m12 DECIMAL(18,2),
+    total DECIMAL(18,2),
+    FOREIGN KEY (application_id) REFERENCES loan_application(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`;
 
 // 建表：datahuizong
 const createHuizongTableSQL = `
@@ -114,12 +313,18 @@ CREATE TABLE IF NOT EXISTS datahuizong (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 )`;
 
-conn.query(createTableSQL, (err) => {
-    if (err) {
-        console.error('创建 loan_application 表失败:', err);
-    } else {
-        console.log('loan_application 表创建成功或已存在');
-    }
+const tableStatements = [
+    createLoanApplicationTableSQL
+];
+
+tableStatements.forEach((statement) => {
+    conn.query(statement, (err) => {
+        if (err) {
+            console.error('创建表失败:', err);
+        } else {
+            console.log('表创建成功或已存在');
+        }
+    });
 });
 
 conn.query(createHuizongTableSQL, (err) => {
@@ -134,6 +339,362 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+const monthKeys = ['m1', 'm2', 'm3', 'm4', 'm5', 'm6', 'm7', 'm8', 'm9', 'm10', 'm11', 'm12'];
+const quarterKeys = ['m3', 'm6', 'm9', 'm12'];
+
+const normalizeArray = (value) => (Array.isArray(value) ? value : []);
+const serializeArray = (value) => JSON.stringify(normalizeArray(value));
+
+const hasRowContent = (row) => {
+    if (!row || typeof row !== 'object') {
+        return false;
+    }
+    return Object.values(row).some((value) => value !== null && value !== undefined && value !== '');
+};
+
+const normalizeCell = (value) => (value === '' || value === undefined ? null : value);
+const normalizeScalar = (value) => (value === '' ? null : value);
+const buildMonthlyValues = (row) => monthKeys.map((key) => normalizeCell(row ? row[key] : null));
+const buildQuarterValues = (row) => quarterKeys.map((key) => normalizeCell(row ? row[key] : null));
+
+const insertBatch = async (table, columns, rows, mapper) => {
+    const filtered = rows.filter(hasRowContent);
+    if (filtered.length === 0) {
+        return { inserted: 0 };
+    }
+    const placeholders = filtered.map(() => `(${columns.map(() => '?').join(', ')})`).join(', ');
+    const sql = `INSERT INTO ${table} (${columns.join(', ')}) VALUES ${placeholders}`;
+    const values = filtered.flatMap((row) => mapper(row));
+    const result = await queryAsync(sql, values);
+    return { inserted: result?.affectedRows ?? filtered.length };
+};
+
+const mainColumns = [
+    'project_a_owner', 'project_b_owner', 'project_market_manager', 'project_source', 'project_coop_bank',
+    'project_apply_date', 'project_enterpriseid', 'loan_borrower_name', 'loan_apply_amount', 'loan_apply_term',
+    'loan_purpose_detail', 'company_name', 'company_registered_capital', 'company_established_date',
+    'company_registered_address', 'company_main_business', 'company_employee_count', 'company_is_salary',
+    'company_shareholder_info', 'controller_name', 'controller_gender', 'controller_native_place',
+    'controller_marital_status', 'controller_birth_date', 'controller_service_years', 'controller_education',
+    'controller_spouse_name', 'controller_career_experience', 'family_members_info', 'family_is_hemu',
+    'family_annual_expense', 'social_relationship_info', 'residence_type', 'residence_years', 'residence_address',
+    'business_type', 'business_month_pay', 'business_is_pay', 'business_model_description', 'business_is_waimao',
+    'business_is_jinshen', 'credit_inquiry_count', 'credit_adverse_info', 'credit_overdue_count',
+    'credit_max_overdue_amount', 'litigation_status', 'electricity_is_quantity', 'electricity_is_cost',
+    'electricity_descript', 'analysis_plan_amount', 'analysis_plan_term', 'analysis_plan_repayment_method',
+    'analysis_plan_fee_rate', 'analysis_plan_corp_guarantee', 'analysis_plan_personal_guarantee',
+    'analysis_plan_collateral', 'analysis_plan_diyapingguzhi', 'analysis_plan_eryayuzhi',
+    'analysis_plan_diyajingzhi', 'analysis_fin_total_assets', 'analysis_fin_total_liabilities',
+    'analysis_fin_net_assets', 'analysis_fin_revenue', 'analysis_fin_net_income', 'analysis_ind_asset_debt_ratio',
+    'analysis_ind_sales_debt_ratio', 'analysis_ind_meets_3x_income', 'analysis_ind_receivable_days',
+    'analysis_ind_avg_balance', 'analysis_ind_repayment_ratio', 'analysis_ind_is_superior_loan',
+    'analysis_ind_is_growth_phase', 'analysis_ind_is_added_guarantor', 'analysis_soft_info', 'analysis_summary',
+    'analysis_limit_calculation', 'analysis_limit_apply_amount', 'analysis_limit_increase_factors', 'bs_date',
+    'bs_cash', 'bs_ar', 'bs_prepayments', 'bs_other_ar', 'bs_inventory', 'bs_fixed_assets', 'bs_total_assets',
+    'bs_loans', 'bs_ap', 'bs_advances', 'bs_other_ap', 'bs_capital', 'bs_retained_earnings',
+    'bs_total_liabilities_equity', 'asset_totals_buy_price', 'asset_totals_current_value',
+    'asset_totals_depreciation', 'is_table_year', 'is_table_s1_t', 'is_table_s2_t', 'is_table_s3_t',
+    'is_table_s1', 'is_table_s2', 'is_table_s3', 'is_table_s_total', 'is_table_material_cost',
+    'is_table_gross_profit', 'is_table_f_wages', 'is_table_f_rent', 'is_table_f_utility', 'is_table_f_comm',
+    'is_table_f_trans', 'is_table_f_loss', 'is_table_f_adv', 'is_table_f_entertain', 'is_table_f_tax',
+    'is_table_f_other', 'is_table_f_total', 'is_table_net_profit', 'is_table_o_family_exp', 'is_table_o_biz_loan',
+    'is_table_o_pvt_loan', 'is_table_o_other_exp', 'is_table_o_family_inc', 'is_table_annual_net_income',
+    'rev_check_total_value', 'rev_check_est_total', 'rev_check_is_revenue', 'rev_check_diff_rate',
+    'rev_check_method', 'business_sites_json', 'business_accounts_json', 'account_rows_json',
+    'daily_avg_balance_json', 'guarantees_json', 'guarantees_amount_total', 'guarantees_balance_total',
+    'existing_loans_json', 'electricity_items_json', 'asset_stats_json', 'rev_check_items_json', 'cashflow_in_json',
+    'cashflow_out_json', 'predicted', 'prediction_text',
+    'expert_opinion', 'expert_amount', 'created_by'
+];
+
+const mapMainValues = (payload) => {
+    const project = payload.project || {};
+    const loan = payload.loan || {};
+    const company = payload.company || {};
+    const controller = payload.controller || {};
+    const family = payload.family || {};
+    const social = payload.social || {};
+    const residence = payload.residence || {};
+    const business = payload.business || {};
+    const credit = payload.credit || {};
+    const litigation = payload.litigation || {};
+    const electricity = payload.electricity || {};
+    const analysis = payload.analysis || {};
+    const plan = analysis.plan || {};
+    const financials = analysis.financials || {};
+    const indicators = analysis.indicators || {};
+    const limit = analysis.limit || {};
+    const bs = payload.bs || {};
+    const assetTotals = payload.asset_totals || {};
+    const isTable = payload.is_table || {};
+    const revCheck = payload.rev_check || {};
+    const guaranteesTotals = payload.guarantees_totals || {};
+
+    return [
+        project.a_owner || null,
+        project.b_owner || null,
+        project.market_manager || null,
+        project.source || null,
+        project.coop_bank || null,
+        project.apply_date || null,
+        project.enterpriseid || null,
+        loan.borrower_name || null,
+        loan.apply_amount || null,
+        loan.apply_term || null,
+        loan.purpose_detail || null,
+        company.name || null,
+        company.registered_capital || null,
+        company.established_date || null,
+        company.registered_address || null,
+        company.main_business || null,
+        company.employee_count || null,
+        company.is_salary || null,
+        company.shareholder_info || null,
+        controller.name || null,
+        controller.gender || null,
+        controller.native_place || null,
+        controller.marital_status || null,
+        controller.birth_date || null,
+        controller.service_years || null,
+        controller.education || null,
+        controller.spouse_name || null,
+        controller.career_experience || null,
+        family.members_info || null,
+        family.is_hemu || null,
+        family.annual_expense || null,
+        social.relationship_info || null,
+        residence.type || null,
+        residence.years || null,
+        residence.address || null,
+        business.type || null,
+        business.month_pay || null,
+        business.is_pay || null,
+        business.model_description || null,
+        business.is_waimao || null,
+        business.is_jinshen || null,
+        credit.inquiry_count || null,
+        credit.adverse_info || null,
+        credit.overdue_count || null,
+        credit.max_overdue_amount || null,
+        litigation.status || null,
+        electricity.is_quantity || null,
+        electricity.is_cost || null,
+        electricity.descript || null,
+        plan.amount || null,
+        plan.term || null,
+        plan.repayment_method || null,
+        plan.fee_rate || null,
+        plan.corp_guarantee || null,
+        plan.personal_guarantee || null,
+        plan.collateral || null,
+        plan.diyapingguzhi || null,
+        plan.eryayuzhi || null,
+        plan.diyajingzhi || null,
+        financials.total_assets || null,
+        financials.total_liabilities || null,
+        financials.net_assets || null,
+        financials.revenue || null,
+        financials.net_income || null,
+        indicators.asset_debt_ratio || null,
+        indicators.sales_debt_ratio || null,
+        indicators.meets_3x_income || null,
+        indicators.receivable_days || null,
+        indicators.avg_balance || null,
+        indicators.repayment_ratio || null,
+        indicators.is_superior_loan || null,
+        indicators.is_growth_phase || null,
+        indicators.is_added_guarantor || null,
+        analysis.soft_info || null,
+        analysis.summary || null,
+        limit.calculation || null,
+        limit.apply_amount || null,
+        limit.increase_factors || null,
+        bs.date || null,
+        bs.cash || null,
+        bs.ar || null,
+        bs.prepayments || null,
+        bs.other_ar || null,
+        bs.inventory || null,
+        bs.fixed_assets || null,
+        bs.total_assets || null,
+        bs.loans || null,
+        bs.ap || null,
+        bs.advances || null,
+        bs.other_ap || null,
+        bs.capital || null,
+        bs.retained_earnings || null,
+        bs.total_liabilities_equity || null,
+        assetTotals.buy_price || null,
+        assetTotals.current_value || null,
+        assetTotals.depreciation || null,
+        isTable.year || null,
+        isTable.s1_t || null,
+        isTable.s2_t || null,
+        isTable.s3_t || null,
+        isTable.s1 || null,
+        isTable.s2 || null,
+        isTable.s3 || null,
+        isTable.s_total || null,
+        isTable.material_cost || null,
+        isTable.gross_profit || null,
+        isTable.f_wages || null,
+        isTable.f_rent || null,
+        isTable.f_utility || null,
+        isTable.f_comm || null,
+        isTable.f_trans || null,
+        isTable.f_loss || null,
+        isTable.f_adv || null,
+        isTable.f_entertain || null,
+        isTable.f_tax || null,
+        isTable.f_other || null,
+        isTable.f_total || null,
+        isTable.net_profit || null,
+        isTable.o_family_exp || null,
+        isTable.o_biz_loan || null,
+        isTable.o_pvt_loan || null,
+        isTable.o_other_exp || null,
+        isTable.o_family_inc || null,
+        isTable.annual_net_income || null,
+        revCheck.total_value || null,
+        revCheck.est_total || null,
+        revCheck.is_revenue || null,
+        revCheck.diff_rate || null,
+        revCheck.method || null,
+        serializeArray(payload.business_sites),
+        serializeArray(payload.business_accounts),
+        serializeArray(payload.account_rows),
+        serializeArray(payload.daily_avg_balance),
+        serializeArray(payload.guarantees),
+        guaranteesTotals.amount_total || null,
+        guaranteesTotals.balance_total || null,
+        serializeArray(payload.existing_loans),
+        serializeArray(electricity.items || []),
+        serializeArray(payload.asset_stats),
+        serializeArray(revCheck.items || []),
+        serializeArray(payload.cashflow_in),
+        serializeArray(payload.cashflow_out),
+        payload.predicted || null,
+        payload.prediction_text || null,
+        payload.expert_opinion || null,
+        payload.expert_amount || null,
+        payload.created_by || null
+    ];
+};
+
+const insertChildRows = async (applicationId, payload) => {
+    const insertSummary = {};
+    insertSummary.business_sites = (await insertBatch(
+        'business_sites',
+        ['application_id', 'address', 'building_area', 'land_area', 'ownership'],
+        normalizeArray(payload.business_sites),
+        (row) => [applicationId, row.address || null, row.building_area || null, row.land_area || null, row.ownership || null]
+    )).inserted;
+
+    insertSummary.business_accounts = (await insertBatch(
+        'business_accounts',
+        ['application_id', 'account_name', 'account_no'],
+        normalizeArray(payload.business_accounts),
+        (row) => [applicationId, row.account_name || null, row.account_no || null]
+    )).inserted;
+
+    insertSummary.account_rows = (await insertBatch(
+        'account_rows',
+        ['application_id', 'year', ...monthKeys, 'avg'],
+        normalizeArray(payload.account_rows),
+        (row) => [applicationId, row.year || null, ...buildMonthlyValues(row), row.avg || null]
+    )).inserted;
+
+    insertSummary.daily_avg_balance = (await insertBatch(
+        'daily_avg_balance',
+        ['application_id', 'year', ...quarterKeys, 'annual_avg'],
+        normalizeArray(payload.daily_avg_balance),
+        (row) => [applicationId, row.year || null, ...buildQuarterValues(row), row.annual_avg || null]
+    )).inserted;
+
+    insertSummary.guarantees = (await insertBatch(
+        'guarantees',
+        ['application_id', 'type', 'amount', 'balance', 'counter_guarantee', 'monthly_payment', 'start_date', 'end_date', 'bank_rate', 'purpose'],
+        normalizeArray(payload.guarantees),
+        (row) => [
+            applicationId,
+            row.type || null,
+            row.amount || null,
+            row.balance || null,
+            row.counter_guarantee || null,
+            row.monthly_payment || null,
+            row.start_date || null,
+            row.end_date || null,
+            row.bank_rate || null,
+            row.purpose || null
+        ]
+    )).inserted;
+
+    insertSummary.existing_loans = (await insertBatch(
+        'existing_loans',
+        ['application_id', 'type', 'amount', 'balance', 'mode', 'monthly_payment', 'start_date', 'end_date', 'bank_rate', 'purpose'],
+        normalizeArray(payload.existing_loans),
+        (row) => [
+            applicationId,
+            row.type || null,
+            row.amount || null,
+            row.balance || null,
+            row.mode || null,
+            row.monthly_payment || null,
+            row.start_date || null,
+            row.end_date || null,
+            row.bank_rate || null,
+            row.purpose || null
+        ]
+    )).inserted;
+
+    const electricityItems = payload.electricity ? payload.electricity.items : [];
+    insertSummary.electricity_items = (await insertBatch(
+        'electricity_items',
+        ['application_id', 'year', ...monthKeys, 'total'],
+        normalizeArray(electricityItems),
+        (row) => [applicationId, row.year || null, ...buildMonthlyValues(row), row.total || null]
+    )).inserted;
+
+    insertSummary.asset_stats = (await insertBatch(
+        'asset_stats',
+        ['application_id', 'name', 'buy_time', 'buy_price', 'current_value', 'depreciation', 'remark'],
+        normalizeArray(payload.asset_stats),
+        (row) => [
+            applicationId,
+            row.name || null,
+            row.buy_time || null,
+            row.buy_price || null,
+            row.current_value || null,
+            row.depreciation || null,
+            row.remark || null
+        ]
+    )).inserted;
+
+    const revCheckItems = payload.rev_check ? payload.rev_check.items : [];
+    insertSummary.rev_check_items = (await insertBatch(
+        'rev_check_items',
+        ['application_id', 'name', 'value'],
+        normalizeArray(revCheckItems),
+        (row) => [applicationId, row.name || null, row.value || null]
+    )).inserted;
+
+    insertSummary.cashflow_in = (await insertBatch(
+        'cashflow_items',
+        ['application_id', 'direction', 'year', ...monthKeys, 'total'],
+        normalizeArray(payload.cashflow_in),
+        (row) => [applicationId, 'in', row.year || null, ...buildMonthlyValues(row), row.total || null]
+    )).inserted;
+
+    insertSummary.cashflow_out = (await insertBatch(
+        'cashflow_items',
+        ['application_id', 'direction', 'year', ...monthKeys, 'total'],
+        normalizeArray(payload.cashflow_out),
+        (row) => [applicationId, 'out', row.year || null, ...buildMonthlyValues(row), row.total || null]
+    )).inserted;
+
+    return insertSummary;
+};
+
 // insert huizong
 app.post('/insert-huizong', async (req, res) => {
     try {
@@ -144,10 +705,10 @@ app.post('/insert-huizong', async (req, res) => {
         const values = [
             data.company_name,
             data.date,
-            data.application_period,
+            normalizeScalar(data.application_period),
             data.project_manager,
             data.report_number,
-            data.predicted,
+            normalizeScalar(data.predicted),
             data.expert_opinion || null,
             data.expert_amount || null,
             data.created_by || null
@@ -221,49 +782,50 @@ app.post('/insert-prediction1', async (req, res) => {
 
 // 插入 loan_application
 app.post('/insert-prediction', async (req, res) => {
+    const payload = req.body || {};
+    const project = payload.project || {};
+    const company = payload.company || {};
+
+    if (!project.enterpriseid || !company.name) {
+        return res.status(400).json({ error: 'Missing required fields: project.enterpriseid, company.name' });
+    }
+
     try {
-        const prediction = req.body;
-        if (!prediction) {
-            return res.status(400).json({ error: 'No data received' });
-        }
+        await queryAsync('START TRANSACTION');
 
-        const requiredFields = ['project_number', 'company_name', 'project_manager'];
-        const missingFields = requiredFields.filter(field => !prediction[field]);
-        if (missingFields.length > 0) {
-            return res.status(400).json({ error: `Missing required fields: ${missingFields.join(', ')}` });
-        }
-
-        const columns = [
-            'project_number', 'company_name', 'project_manager', 'application_amount', 'application_period',
-            'repayment_method', 'controller_gender', 'education_level', 'marital_status', 'residence_type',
-            'local_residence_years', 'industry_category', 'industry_experience', 'is_foreign_trade',
-            'is_cautious_industry', 'employee_count', 'business_premises_type', 'monthly_rent',
-            'monthly_balance', 'daily_balance', 'electricity_consumption', 'cash_at_meeting',
-            'receivables_at_meeting', 'inventory_at_meeting', 'payables_at_meeting', 'total_assets',
-            'total_liabilities', 'net_assets', 'annual_sales', 'annual_net_profit', 'monthly_net_profit',
-            'core_assets', 'hard_liabilities', 'operating_liabilities', 'sales_debt_ratio',
-            'asset_debt_ratio', 'monthly_repayment', 'total_monthly_repayment', 'repayment_income_ratio',
-            'average_payment_period', 'family_harmony', 'minor_children', 'adult_family_members',
-            'working_family_members', 'credit_inquiries', 'overdue_times', 'max_overdue_amount',
-            'bank_inflow', 'bank_outflow', 'highest_flow_month', 'lowest_flow_month',
-            'company_guarantee', 'personal_guarantee', 'additional_guarantor', 'property_mortgage',
-            'property_second_mortgage', 'equipment_mortgage', 'is_growth_stage', 'used_youdaibao',
-            'education_work_experience', 'family_social_relations', 'business_model', 'counter_guarantee',
-            'main_business', 'profit_usage', 'other_soft_info', 'loan_purpose',
-            'predicted', 'prediction_text', 'expert_opinion', 'expert_amount', 'created_by'
-        ];
-
-        const sql = `INSERT INTO loan_application (${columns.join(', ')}) VALUES (${columns.map(() => '?').join(', ')})`;
-        const values = columns.map((key) => {
-            if (key === 'expert_opinion') return prediction.expert_opinion || null;
-            if (key === 'expert_amount') return prediction.expert_amount || null;
-            if (key === 'created_by') return prediction.created_by || null;
-            return prediction[key];
-        });
-
+        const sql = `INSERT INTO loan_application (${mainColumns.join(', ')}) VALUES (${mainColumns.map(() => '?').join(', ')})`;
+        const values = mapMainValues(payload);
         const result = await queryAsync(sql, values);
-        res.json({ success: true, message: 'Data inserted successfully', insertId: result.insertId });
+        const applicationId = result.insertId;
+
+        const childSummary = {
+            business_sites: normalizeArray(payload.business_sites).length,
+            business_accounts: normalizeArray(payload.business_accounts).length,
+            account_rows: normalizeArray(payload.account_rows).length,
+            daily_avg_balance: normalizeArray(payload.daily_avg_balance).length,
+            guarantees: normalizeArray(payload.guarantees).length,
+            existing_loans: normalizeArray(payload.existing_loans).length,
+            electricity_items: normalizeArray(payload.electricity ? payload.electricity.items : []).length,
+            asset_stats: normalizeArray(payload.asset_stats).length,
+            rev_check_items: normalizeArray(payload.rev_check ? payload.rev_check.items : []).length,
+            cashflow_in: normalizeArray(payload.cashflow_in).length,
+            cashflow_out: normalizeArray(payload.cashflow_out).length
+        };
+
+        await queryAsync('COMMIT');
+        console.log('Inserted loan_application', {
+            id: applicationId,
+            project_enterpriseid: project.enterpriseid || null,
+            company_name: company.name || null,
+            child_rows: childSummary
+        });
+        res.json({ success: true, message: 'Data inserted successfully', insertId: applicationId });
     } catch (error) {
+        try {
+            await queryAsync('ROLLBACK');
+        } catch (rollbackError) {
+            console.error('Error rolling back transaction:', rollbackError);
+        }
         console.error('Error inserting prediction:', error);
         res.status(500).json({ error: 'Failed to insert data', details: error.message });
     }
@@ -316,10 +878,10 @@ app.get('/loan-application', (req, res) => {
     let sql = '';
     let params = [];
     if (createdBy) {
-        sql = `SELECT * FROM loan_application WHERE created_by = ? ORDER BY created_at DESC`;
+        sql = `SELECT *, project_enterpriseid AS project_number, project_market_manager AS project_manager, loan_apply_amount AS application_amount, loan_apply_term AS application_period FROM loan_application WHERE created_by = ? ORDER BY created_at DESC`;
         params = [createdBy];
     } else if (projectNumber) {
-        sql = `SELECT * FROM loan_application WHERE project_number = ?`;
+        sql = `SELECT *, project_enterpriseid AS project_number, project_market_manager AS project_manager, loan_apply_amount AS application_amount, loan_apply_term AS application_period FROM loan_application WHERE project_enterpriseid = ?`;
         params = [projectNumber];
     } else {
         return res.status(400).send({ error: 'projectNumber or createdBy is required' });
@@ -341,7 +903,12 @@ app.get('/department-entries', async (req, res) => {
         }
         const deptId = users[0].department_id;
         const rows = await queryAsync(
-            `SELECT la.* FROM loan_application la
+            `SELECT la.*,
+                    la.project_enterpriseid AS project_number,
+                    la.project_market_manager AS project_manager,
+                    la.loan_apply_amount AS application_amount,
+                    la.loan_apply_term AS application_period
+             FROM loan_application la
              WHERE la.created_by IN (
                  SELECT username FROM users WHERE department_id = ? AND username <> ?
              )
@@ -356,73 +923,100 @@ app.get('/department-entries', async (req, res) => {
 });
 
 // 更新贷款申请数据（按 id）
-app.put('/loan-application/:id', (req, res) => {
+app.put('/loan-application/:id', async (req, res) => {
     const id = req.params.id;
-    const data = req.body || {};
+    const payload = req.body || {};
     if (!id) return res.status(400).send({ error: 'id is required' });
 
-    const updatableColumns = [
-        'project_number', 'company_name', 'project_manager', 'application_amount', 'application_period',
-        'repayment_method', 'controller_gender', 'education_level', 'marital_status', 'residence_type',
-        'local_residence_years', 'industry_category', 'industry_experience', 'is_foreign_trade',
-        'is_cautious_industry', 'employee_count', 'business_premises_type', 'monthly_rent',
-        'monthly_balance', 'daily_balance', 'electricity_consumption', 'cash_at_meeting',
-        'receivables_at_meeting', 'inventory_at_meeting', 'payables_at_meeting', 'total_assets',
-        'total_liabilities', 'net_assets', 'annual_sales', 'annual_net_profit', 'monthly_net_profit',
-        'core_assets', 'hard_liabilities', 'operating_liabilities', 'sales_debt_ratio',
-        'asset_debt_ratio', 'monthly_repayment', 'total_monthly_repayment', 'repayment_income_ratio',
-        'average_payment_period', 'family_harmony', 'minor_children', 'adult_family_members',
-        'working_family_members', 'credit_inquiries', 'overdue_times', 'max_overdue_amount',
-        'bank_inflow', 'bank_outflow', 'highest_flow_month', 'lowest_flow_month',
-        'company_guarantee', 'personal_guarantee', 'additional_guarantor', 'property_mortgage',
-        'property_second_mortgage', 'equipment_mortgage', 'is_growth_stage', 'used_youdaibao',
-        'education_work_experience', 'family_social_relations', 'business_model', 'counter_guarantee',
-        'main_business', 'profit_usage', 'other_soft_info', 'loan_purpose',
-        'predicted', 'prediction_text', 'expert_opinion', 'expert_amount', 'created_by'
-    ];
+    const isStructuredPayload = Boolean(
+        payload.project || payload.loan || payload.company || payload.controller || payload.family ||
+        payload.social || payload.residence || payload.business || payload.credit || payload.analysis ||
+        payload.bs || payload.is_table || payload.rev_check || payload.asset_stats || payload.cashflow_in ||
+        payload.cashflow_out || payload.business_sites || payload.business_accounts || payload.account_rows ||
+        payload.daily_avg_balance || payload.guarantees || payload.existing_loans || payload.electricity
+    );
 
-    const fieldsToUpdate = updatableColumns.filter(col => Object.prototype.hasOwnProperty.call(data, col));
-    if (fieldsToUpdate.length === 0) {
-        return res.status(400).send({ error: 'No valid fields to update' });
+    if (!isStructuredPayload) {
+        const updatableColumns = ['expert_opinion', 'expert_amount', 'predicted', 'prediction_text', 'created_by'];
+        const fieldsToUpdate = updatableColumns.filter((col) => Object.prototype.hasOwnProperty.call(payload, col));
+        if (fieldsToUpdate.length === 0) {
+            return res.status(400).send({ error: 'No valid fields to update' });
+        }
+
+        const setClause = fieldsToUpdate.map((col) => `${col} = ?`).join(', ');
+        const values = fieldsToUpdate.map((col) => payload[col]);
+        values.push(id);
+
+        try {
+            await queryAsync(`UPDATE loan_application SET ${setClause} WHERE id = ?`, values);
+            const rows = await queryAsync(
+                'SELECT project_enterpriseid, company_name, loan_apply_term, project_market_manager, predicted, expert_opinion, expert_amount, created_by FROM loan_application WHERE id = ?',
+                [id]
+            );
+            if (rows && rows.length > 0 && rows[0].project_enterpriseid) {
+                await queryAsync(
+                    `UPDATE datahuizong
+                     SET company_name = ?, application_period = ?, project_manager = ?, predicted = ?, expert_opinion = ?, expert_amount = ?, created_by = ?
+                     WHERE report_number = ?`,
+                    [
+                        rows[0].company_name || null,
+                        rows[0].loan_apply_term || null,
+                        rows[0].project_market_manager || null,
+                        rows[0].predicted || null,
+                        rows[0].expert_opinion || null,
+                        rows[0].expert_amount || null,
+                        rows[0].created_by || null,
+                        rows[0].project_enterpriseid
+                    ]
+                );
+            }
+            return res.send({ success: true, message: 'Updated successfully' });
+        } catch (error) {
+            console.error('Error updating loan_application:', error);
+            return res.status(500).send({ error: error.message });
+        }
     }
 
-    const setClause = fieldsToUpdate.map(col => `${col} = ?`).join(', ');
-    const values = fieldsToUpdate.map(col => data[col]);
-    values.push(id);
+    const project = payload.project || {};
+    const company = payload.company || {};
+    if (!project.enterpriseid || !company.name) {
+        return res.status(400).send({ error: 'project.enterpriseid and company.name are required' });
+    }
 
-    const sql = `UPDATE loan_application SET ${setClause} WHERE id = ?`;
+    try {
+        await queryAsync('START TRANSACTION');
 
-    conn.query(sql, values, (err) => {
-        if (err) {
-            console.error('Error updating loan_application:', err);
-            return res.status(500).send({ error: err.message });
+        const updateSql = `UPDATE loan_application SET ${mainColumns.map((col) => `${col} = ?`).join(', ')} WHERE id = ?`;
+        const updateValues = [...mapMainValues(payload), id];
+        await queryAsync(updateSql, updateValues);
+
+        await queryAsync(
+            `UPDATE datahuizong
+             SET company_name = ?, application_period = ?, project_manager = ?, predicted = ?, expert_opinion = ?, expert_amount = ?, created_by = ?
+             WHERE report_number = ?`,
+            [
+                company.name || null,
+                payload.loan ? payload.loan.apply_term || null : null,
+                project.market_manager || project.a_owner || null,
+                payload.predicted || null,
+                payload.expert_opinion || null,
+                payload.expert_amount || null,
+                payload.created_by || null,
+                project.enterpriseid
+            ]
+        );
+
+        await queryAsync('COMMIT');
+        return res.send({ success: true, message: 'Updated successfully' });
+    } catch (error) {
+        try {
+            await queryAsync('ROLLBACK');
+        } catch (rollbackError) {
+            console.error('Error rolling back transaction:', rollbackError);
         }
-        if (data.project_number) {
-            const updateHuizongSql = `
-                UPDATE datahuizong 
-                SET company_name = ?, application_period = ?, project_manager = ?, predicted = ?, expert_opinion = ?, expert_amount = ?, created_by = ?
-                WHERE report_number = ?
-            `;
-            const huizongValues = [
-                data.company_name || null,
-                data.application_period || null,
-                data.project_manager || null,
-                data.predicted || null,
-                data.expert_opinion || null,
-                data.expert_amount || null,
-                data.created_by || null,
-                data.project_number
-            ];
-            conn.query(updateHuizongSql, huizongValues, (err2) => {
-                if (err2) {
-                    return res.send({ success: true, message: 'loan_application updated, but failed to update datahuizong', warning: err2.message });
-                }
-                return res.send({ success: true, message: 'Updated successfully' });
-            });
-        } else {
-            return res.send({ success: true, message: 'Updated successfully' });
-        }
-    });
+        console.error('Error updating loan_application:', error);
+        return res.status(500).send({ error: error.message });
+    }
 });
 
 // 删除贷款申请数据（按 id），同时删除 datahuizong 记录
@@ -432,14 +1026,14 @@ app.delete('/loan-application-with-summary/:id', async (req, res) => {
         return res.status(400).send({ error: 'id is required' });
     }
     try {
-        const rows = await queryAsync('SELECT project_number FROM loan_application WHERE id = ?', [id]);
+        const rows = await queryAsync('SELECT project_enterpriseid FROM loan_application WHERE id = ?', [id]);
         if (!rows || rows.length === 0) {
             return res.status(404).send({ error: 'Record not found' });
         }
-        const projectNumber = rows[0].project_number;
+        const reportNumber = rows[0].project_enterpriseid;
         await queryAsync('DELETE FROM loan_application WHERE id = ?', [id]);
-        if (projectNumber) {
-            await queryAsync('DELETE FROM datahuizong WHERE report_number = ?', [projectNumber]);
+        if (reportNumber) {
+            await queryAsync('DELETE FROM datahuizong WHERE report_number = ?', [reportNumber]);
         }
         res.send({ success: true, message: 'Deleted successfully' });
     } catch (error) {
@@ -459,10 +1053,10 @@ app.post('/datahuizong', async (req, res) => {
         const values = [
             data.company_name,
             data.date,
-            data.application_period,
+            normalizeScalar(data.application_period),
             data.project_manager,
             data.report_number,
-            data.predicted,
+            normalizeScalar(data.predicted),
             data.expert_opinion || null,
             data.expert_amount || null,
             data.created_by || null

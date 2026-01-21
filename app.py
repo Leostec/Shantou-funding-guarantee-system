@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify, send_from_directory, send_file
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.linear_model import LinearRegression
@@ -6,7 +6,8 @@ from sklearn.metrics import mean_squared_error, r2_score
 import pandas as pd
 import numpy as np
 from flask_cors import CORS
-from datetime import datetime
+from datetime import datetime, date
+from decimal import Decimal
 import uuid
 import joblib
 from sklearn.impute import SimpleImputer
@@ -29,12 +30,18 @@ except ImportError:
     plt = None
 import os
 from docx import Document
+try:
+    from docxtpl import DocxTemplate
+except ImportError:
+    DocxTemplate = None
 from openpyxl import Workbook
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import SystemMessage, HumanMessage
 import logging
 from sklearn.preprocessing import StandardScaler
 import json
+import io
+import re
 from dotenv import load_dotenv
 import pymysql
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -143,6 +150,285 @@ def convert_numpy_types(obj):
     elif isinstance(obj, list):
         return [convert_numpy_types(item) for item in obj]
     return obj
+
+def normalize_bool(value):
+    if isinstance(value, bool):
+        return value
+    if value is None:
+        return False
+    if isinstance(value, (int, float)):
+        return value != 0
+    if isinstance(value, str):
+        val = value.strip()
+        if val in ("是", "否"):
+            return val == "是"
+        val_lower = val.lower()
+        if val_lower in ("1", "true", "yes", "y"):
+            return True
+        if val_lower in ("0", "false", "no", "n", ""):
+            return False
+    return bool(value)
+
+def normalize_value(value):
+    if value is None:
+        return ""
+    if isinstance(value, (datetime, date)):
+        return value.strftime("%Y-%m-%d")
+    if isinstance(value, Decimal):
+        return str(value)
+    return value
+
+def parse_json_field(value):
+    if value is None or value == "":
+        return []
+    if isinstance(value, (list, dict)):
+        return value
+    if isinstance(value, (bytes, bytearray)):
+        try:
+            value = value.decode("utf-8")
+        except Exception:
+            return []
+    try:
+        return json.loads(value)
+    except Exception:
+        return []
+
+def normalize_list(value):
+    items = parse_json_field(value)
+    if not isinstance(items, list):
+        return []
+    normalized = []
+    for item in items:
+        if isinstance(item, dict):
+            normalized.append({k: normalize_value(v) for k, v in item.items()})
+    return normalized
+
+def sanitize_filename(name):
+    text = str(name or "report")
+    return re.sub(r'[\\\\/:*?"<>|]+', "_", text)
+
+def build_doc_context(row):
+    business_sites = normalize_list(row.get("business_sites_json"))
+    business_accounts = normalize_list(row.get("business_accounts_json"))
+    account_rows = normalize_list(row.get("account_rows_json"))
+    daily_avg_balance = normalize_list(row.get("daily_avg_balance_json"))
+    guarantees = normalize_list(row.get("guarantees_json"))
+    existing_loans = normalize_list(row.get("existing_loans_json"))
+    electricity_items = normalize_list(row.get("electricity_items_json"))
+    asset_stats = normalize_list(row.get("asset_stats_json"))
+    rev_check_items = normalize_list(row.get("rev_check_items_json"))
+    cashflow_in = normalize_list(row.get("cashflow_in_json"))
+    cashflow_out = normalize_list(row.get("cashflow_out_json"))
+
+    context = {
+        "project": {
+            "a_owner": normalize_value(row.get("project_a_owner")),
+            "b_owner": normalize_value(row.get("project_b_owner")),
+            "market_manager": normalize_value(row.get("project_market_manager")),
+            "source": normalize_value(row.get("project_source")),
+            "coop_bank": normalize_value(row.get("project_coop_bank")),
+            "apply_date": normalize_value(row.get("project_apply_date")),
+            "enterpriseid": normalize_value(row.get("project_enterpriseid")),
+        },
+        "loan": {
+            "borrower_name": normalize_value(row.get("loan_borrower_name")),
+            "apply_amount": normalize_value(row.get("loan_apply_amount")),
+            "apply_term": normalize_value(row.get("loan_apply_term")),
+            "purpose_detail": normalize_value(row.get("loan_purpose_detail")),
+        },
+        "company": {
+            "name": normalize_value(row.get("company_name")),
+            "registered_capital": normalize_value(row.get("company_registered_capital")),
+            "established_date": normalize_value(row.get("company_established_date")),
+            "registered_address": normalize_value(row.get("company_registered_address")),
+            "main_business": normalize_value(row.get("company_main_business")),
+            "employee_count": normalize_value(row.get("company_employee_count")),
+            "is_salary": normalize_bool(row.get("company_is_salary")),
+            "shareholder_info": normalize_value(row.get("company_shareholder_info")),
+        },
+        "controller": {
+            "name": normalize_value(row.get("controller_name")),
+            "gender": normalize_value(row.get("controller_gender")),
+            "native_place": normalize_value(row.get("controller_native_place")),
+            "marital_status": normalize_value(row.get("controller_marital_status")),
+            "birth_date": normalize_value(row.get("controller_birth_date")),
+            "service_years": normalize_value(row.get("controller_service_years")),
+            "education": normalize_value(row.get("controller_education")),
+            "spouse_name": normalize_value(row.get("controller_spouse_name")),
+            "career_experience": normalize_value(row.get("controller_career_experience")),
+        },
+        "family": {
+            "members_info": normalize_value(row.get("family_members_info")),
+            "is_hemu": normalize_bool(row.get("family_is_hemu")),
+            "annual_expense": normalize_value(row.get("family_annual_expense")),
+        },
+        "social": {
+            "relationship_info": normalize_value(row.get("social_relationship_info")),
+        },
+        "residence": {
+            "type": normalize_value(row.get("residence_type")),
+            "years": normalize_value(row.get("residence_years")),
+            "address": normalize_value(row.get("residence_address")),
+        },
+        "business_sites": business_sites,
+        "business": {
+            "type": normalize_value(row.get("business_type")),
+            "month_pay": normalize_value(row.get("business_month_pay")),
+            "is_pay": normalize_bool(row.get("business_is_pay")),
+            "model_description": normalize_value(row.get("business_model_description")),
+            "is_waimao": normalize_bool(row.get("business_is_waimao")),
+            "is_jinshen": normalize_bool(row.get("business_is_jinshen")),
+        },
+        "business_accounts": business_accounts,
+        "account_rows": account_rows,
+        "daily_avg_balance": daily_avg_balance,
+        "guarantees": guarantees,
+        "g": {
+            "amount_total": normalize_value(row.get("guarantees_amount_total")),
+            "balance_total": normalize_value(row.get("guarantees_balance_total")),
+        },
+        "existing_loans": existing_loans,
+        "credit": {
+            "inquiry_count": normalize_value(row.get("credit_inquiry_count")),
+            "adverse_info": normalize_value(row.get("credit_adverse_info")),
+            "overdue_count": normalize_value(row.get("credit_overdue_count")),
+            "max_overdue_amount": normalize_value(row.get("credit_max_overdue_amount")),
+        },
+        "litigation": {
+            "status": normalize_value(row.get("litigation_status")),
+        },
+        "electricity": {
+            "is_quantity": normalize_bool(row.get("electricity_is_quantity")),
+            "is_cost": normalize_bool(row.get("electricity_is_cost")),
+            "rows": electricity_items,
+            "descript": normalize_value(row.get("electricity_descript")),
+        },
+        "analysis": {
+            "plan": {
+                "amount": normalize_value(row.get("analysis_plan_amount")),
+                "term": normalize_value(row.get("analysis_plan_term")),
+                "repayment_method": normalize_value(row.get("analysis_plan_repayment_method")),
+                "fee_rate": normalize_value(row.get("analysis_plan_fee_rate")),
+                "corp_guarantee": normalize_value(row.get("analysis_plan_corp_guarantee")),
+                "personal_guarantee": normalize_value(row.get("analysis_plan_personal_guarantee")),
+                "collateral": normalize_value(row.get("analysis_plan_collateral")),
+                "diyapingguzhi": normalize_value(row.get("analysis_plan_diyapingguzhi")),
+                "eryayuzhi": normalize_value(row.get("analysis_plan_eryayuzhi")),
+                "diyajingzhi": normalize_value(row.get("analysis_plan_diyajingzhi")),
+            },
+            "financials": {
+                "total_assets": normalize_value(row.get("analysis_fin_total_assets")),
+                "total_liabilities": normalize_value(row.get("analysis_fin_total_liabilities")),
+                "net_assets": normalize_value(row.get("analysis_fin_net_assets")),
+                "revenue": normalize_value(row.get("analysis_fin_revenue")),
+                "net_income": normalize_value(row.get("analysis_fin_net_income")),
+            },
+            "indicators": {
+                "asset_debt_ratio": normalize_value(row.get("analysis_ind_asset_debt_ratio")),
+                "sales_debt_ratio": normalize_value(row.get("analysis_ind_sales_debt_ratio")),
+                "meets_3x_income": normalize_value(row.get("analysis_ind_meets_3x_income")),
+                "receivable_days": normalize_value(row.get("analysis_ind_receivable_days")),
+                "avg_balance": normalize_value(row.get("analysis_ind_avg_balance")),
+                "repayment_ratio": normalize_value(row.get("analysis_ind_repayment_ratio")),
+                "is_superior_loan": normalize_bool(row.get("analysis_ind_is_superior_loan")),
+                "is_growth_phase": normalize_bool(row.get("analysis_ind_is_growth_phase")),
+                "is_added_guarantor": normalize_bool(row.get("analysis_ind_is_added_guarantor")),
+            },
+            "soft_info": normalize_value(row.get("analysis_soft_info")),
+            "summary": normalize_value(row.get("analysis_summary")),
+            "limit": {
+                "calculation": normalize_value(row.get("analysis_limit_calculation")),
+                "apply_amount": normalize_value(row.get("analysis_limit_apply_amount")),
+                "increase_factors": normalize_value(row.get("analysis_limit_increase_factors")),
+            },
+            "profit_destination": "",
+        },
+        "bs": {
+            "date": normalize_value(row.get("bs_date")),
+            "cash": normalize_value(row.get("bs_cash")),
+            "ar": normalize_value(row.get("bs_ar")),
+            "prepayments": normalize_value(row.get("bs_prepayments")),
+            "other_ar": normalize_value(row.get("bs_other_ar")),
+            "inventory": normalize_value(row.get("bs_inventory")),
+            "fixed_assets": normalize_value(row.get("bs_fixed_assets")),
+            "total_assets": normalize_value(row.get("bs_total_assets")),
+            "loans": normalize_value(row.get("bs_loans")),
+            "ap": normalize_value(row.get("bs_ap")),
+            "advances": normalize_value(row.get("bs_advances")),
+            "other_ap": normalize_value(row.get("bs_other_ap")),
+            "capital": normalize_value(row.get("bs_capital")),
+            "retained_earnings": normalize_value(row.get("bs_retained_earnings")),
+            "total_liabilities_equity": normalize_value(row.get("bs_total_liabilities_equity")),
+        },
+        "asset_stats": asset_stats,
+        "asset_totals": {
+            "buy_price": normalize_value(row.get("asset_totals_buy_price")),
+            "current_value": normalize_value(row.get("asset_totals_current_value")),
+            "depreciation": normalize_value(row.get("asset_totals_depreciation")),
+        },
+        "is_table": {
+            "year": normalize_value(row.get("is_table_year")),
+            "s1_t": normalize_value(row.get("is_table_s1_t")),
+            "s2_t": normalize_value(row.get("is_table_s2_t")),
+            "s3_t": normalize_value(row.get("is_table_s3_t")),
+            "s1": normalize_value(row.get("is_table_s1")),
+            "s2": normalize_value(row.get("is_table_s2")),
+            "s3": normalize_value(row.get("is_table_s3")),
+            "s_total": normalize_value(row.get("is_table_s_total")),
+            "material_cost": normalize_value(row.get("is_table_material_cost")),
+            "gross_profit": normalize_value(row.get("is_table_gross_profit")),
+            "f_wages": normalize_value(row.get("is_table_f_wages")),
+            "f_rent": normalize_value(row.get("is_table_f_rent")),
+            "f_utility": normalize_value(row.get("is_table_f_utility")),
+            "f_comm": normalize_value(row.get("is_table_f_comm")),
+            "f_trans": normalize_value(row.get("is_table_f_trans")),
+            "f_loss": normalize_value(row.get("is_table_f_loss")),
+            "f_adv": normalize_value(row.get("is_table_f_adv")),
+            "f_entertain": normalize_value(row.get("is_table_f_entertain")),
+            "f_tax": normalize_value(row.get("is_table_f_tax")),
+            "f_other": normalize_value(row.get("is_table_f_other")),
+            "f_total": normalize_value(row.get("is_table_f_total")),
+            "net_profit": normalize_value(row.get("is_table_net_profit")),
+            "o_family_exp": normalize_value(row.get("is_table_o_family_exp")),
+            "annual_net_income": normalize_value(row.get("is_table_annual_net_income")),
+            "o_biz_loan": normalize_value(row.get("is_table_o_biz_loan")),
+            "o_pvt_loan": normalize_value(row.get("is_table_o_pvt_loan")),
+            "o_other_exp": normalize_value(row.get("is_table_o_other_exp")),
+            "o_family_inc": normalize_value(row.get("is_table_o_family_inc")),
+        },
+        "rev_check": {
+            "check_list": rev_check_items,
+            "total_value": normalize_value(row.get("rev_check_total_value")),
+            "est_total": normalize_value(row.get("rev_check_est_total")),
+            "is_revenue": normalize_value(row.get("rev_check_is_revenue")),
+            "diff_rate": normalize_value(row.get("rev_check_diff_rate")),
+            "method": normalize_value(row.get("rev_check_method")),
+        },
+        "inflow_analysis": cashflow_in,
+        "outflow_analysis": cashflow_out,
+    }
+
+    return context
+
+def render_docx_from_template(context, template_path):
+    doc = DocxTemplate(template_path)
+    doc.render(context)
+
+    target_stream = io.BytesIO()
+    doc.save(target_stream)
+    target_stream.seek(0)
+
+    final_doc = Document(target_stream)
+    for table in final_doc.tables:
+        for row in reversed(table.rows):
+            if not "".join(cell.text.strip() for cell in row.cells):
+                tr = row._tr
+                tr.getparent().remove(tr)
+
+    output_stream = io.BytesIO()
+    final_doc.save(output_stream)
+    output_stream.seek(0)
+    return output_stream
 
 @app.route('/register', methods=['POST'])
 def register_user():
@@ -665,6 +951,41 @@ def data_type():
     }
     response = convert_numpy_types(response)
     return jsonify(response)
+
+@app.route('/download-report', methods=['GET'])
+def download_report():
+    application_id = (request.args.get('id') or '').strip()
+    if not application_id:
+        return jsonify({"message": "missing id"}), 400
+    if DocxTemplate is None:
+        return jsonify({"message": "docxtpl not installed"}), 500
+
+    template_path = os.path.join(os.path.dirname(__file__), "template", "template.docx")
+    if not os.path.exists(template_path):
+        return jsonify({"message": "template file not found"}), 500
+
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute("SELECT * FROM loan_application WHERE id = %s", (application_id,))
+                row = cursor.fetchone()
+        if not row:
+            return jsonify({"message": "record not found"}), 404
+
+        context = build_doc_context(row)
+        output_stream = render_docx_from_template(context, template_path)
+
+        safe_name = sanitize_filename(row.get("project_enterpriseid") or row.get("company_name") or f"report-{application_id}")
+        filename = f"{safe_name}-report.docx"
+        return send_file(
+            output_stream,
+            as_attachment=True,
+            download_name=filename,
+            mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        )
+    except Exception as e:
+        logger.error(f"Failed to generate report: {e}")
+        return jsonify({"message": "failed to generate report"}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)

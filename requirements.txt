@@ -1,2 +1,4 @@
 # MySQL client
 pymysql
+docxtpl
+python-docx
