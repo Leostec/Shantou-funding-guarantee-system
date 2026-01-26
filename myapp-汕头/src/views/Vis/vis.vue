@@ -13,6 +13,10 @@
             <h3>项目信息</h3>
             <div class="form-grid">
               <div class="form-item">
+                <label>项目编号</label>
+                <input type="text" v-model="form.project.enterpriseid" />
+              </div>
+              <div class="form-item">
                 <label>项目A角</label>
                 <input type="text" v-model="form.project.a_owner" />
               </div>
@@ -43,15 +47,11 @@
                 <label>申请日期</label>
                 <input type="date" v-model="form.project.apply_date" />
               </div>
-              <div class="form-item">
-                <label>企业编号</label>
-                <input type="text" v-model="form.project.enterpriseid" />
-              </div>
             </div>
           </div>
 
           <div class="form-section">
-            <h3>申请贷款信息</h3>
+            <h3>一、申请贷款信息</h3>
             <div class="form-grid">
               <div class="form-item">
                 <label>借款人名称</label>
@@ -73,7 +73,7 @@
           </div>
 
           <div class="form-section">
-            <h3>企业基本情况</h3>
+            <h3>二、项目基本情况</h3>
             <div class="form-grid">
               <div class="form-item">
                 <label>企业名称</label>
@@ -96,8 +96,37 @@
                 <textarea v-model="form.company.main_business" rows="3"></textarea>
               </div>
               <div class="form-item">
+                <label>所属行业（大类）</label>
+                <select v-model="form.business.type">
+                  <option value="餐饮业">餐饮业</option>
+                  <option value="纺织业">纺织业</option>
+                  <option value="服务业">服务业</option>
+                  <option value="公安安全管理业">公安安全管理业</option>
+                  <option value="建筑业">建筑业</option>
+                  <option value="教育业">教育业</option>
+                  <option value="零售业">零售业</option>
+                  <option value="贸易">贸易</option>
+                  <option value="农业">农业</option>
+                  <option value="制造业">制造业</option>
+                </select>
+              </div>
+              <div class="form-item">
                 <label>员工人数</label>
                 <input type="number" v-model="form.company.employee_count" />
+              </div>
+              <div class="form-item">
+                <label>是否为外贸型</label>
+                <select v-model="form.business.is_waimao">
+                  <option value="是">是</option>
+                  <option value="否">否</option>
+                </select>
+              </div>
+              <div class="form-item">
+                <label>是否属于谨慎介入行业</label>
+                <select v-model="form.business.is_jinshen">
+                  <option value="是">是</option>
+                  <option value="否">否</option>
+                </select>
               </div>
               <div class="form-item">
                 <label>最近一期工资是否发放</label>
@@ -167,7 +196,7 @@
                 <label>配偶姓名</label>
                 <input type="text" v-model="form.controller.spouse_name" />
               </div>
-              <div class="form-item">
+              <div class="form-item full-row large-textarea">
                 <label>学习、工作及企业发展经历</label>
                 <textarea v-model="form.controller.career_experience" rows="4"></textarea>
               </div>
@@ -178,23 +207,35 @@
             <h3>家庭与社会情况</h3>
             <div class="form-grid">
               <div class="form-item">
-                <label>家庭成员</label>
-                <textarea v-model="form.family.members_info" rows="3"></textarea>
-              </div>
-              <div class="form-item">
                 <label>家庭是否和睦</label>
                 <select v-model="form.family.is_hemu">
                   <option value="是">是</option>
                   <option value="否">否</option>
                 </select>
               </div>
-              <div class="form-item">
+              <div class="form-item full-row large-textarea">
                 <label>家庭年支出</label>
-                <input type="number" v-model="form.family.annual_expense" />
+                <textarea
+                  v-model="form.family.annual_expense"
+                  rows="3"
+                  placeholder="了解家庭一年的支出情况。"
+                ></textarea>
               </div>
-              <div class="form-item">
+              <div class="form-item full-row large-textarea">
+                <label>家庭成员</label>
+                <textarea
+                  v-model="form.family.members_info"
+                  rows="3"
+                  placeholder="父母、配偶、子女的情况、工作等信息；是否有其他不良爱好；家人是否知道该笔贷款及用途"
+                ></textarea>
+              </div>
+              <div class="form-item full-row large-textarea">
                 <label>社会关系</label>
-                <textarea v-model="form.social.relationship_info" rows="3"></textarea>
+                <textarea
+                  v-model="form.social.relationship_info"
+                  rows="3"
+                  placeholder="除直系血亲外的社会关系，如兄弟姐妹、家族、朋友等从政、从商信息。"
+                ></textarea>
               </div>
             </div>
           </div>
@@ -207,17 +248,17 @@
                 <input type="text" v-model="form.residence.type" />
               </div>
               <div class="form-item">
-                <label>本地居住年限</label>
-                <input type="number" v-model="form.residence.years" />
-              </div>
-              <div class="form-item">
                 <label>具体地址</label>
                 <input type="text" v-model="form.residence.address" />
+              </div>
+              <div class="form-item">
+                <label>本地居住年限</label>
+                <input type="number" v-model="form.residence.years" />
               </div>
             </div>
           </div>
           <div class="form-section">
-            <h3>经营模式及经营场所</h3>
+            <h3>三、经营模式及场所</h3>
             <h4 class="subsection-title">经营场所表</h4>
             <div
               class="table-row"
@@ -257,6 +298,17 @@
                     <option value="租赁">租赁</option>
                   </select>
                 </div>
+                <div class="form-item">
+                  <label>场地月租金</label>
+                  <input type="number" v-model="site.month_pay" />
+                </div>
+                <div class="form-item">
+                  <label>最近一期是否支付</label>
+                  <select v-model="site.is_pay">
+                    <option value="是">是</option>
+                    <option value="否">否</option>
+                  </select>
+                </div>
               </div>
             </div>
             <el-button
@@ -271,53 +323,13 @@
             <h4 class="subsection-title">经营模式</h4>
             <div class="form-grid">
               <div class="form-item">
-                <label>经营场所类型</label>
-                <select v-model="form.business.type">
-                  <option value="餐饮业">餐饮业</option>
-                  <option value="纺织业">纺织业</option>
-                  <option value="服务业">服务业</option>
-                  <option value="公安安全管理业">公安安全管理业</option>
-                  <option value="建筑业">建筑业</option>
-                  <option value="教育业">教育业</option>
-                  <option value="零售业">零售业</option>
-                  <option value="贸易">贸易</option>
-                  <option value="农业">农业</option>
-                  <option value="制造业">制造业</option>
-                </select>
-              </div>
-              <div class="form-item">
-                <label>场地月租金</label>
-                <input type="number" v-model="form.business.month_pay" />
-              </div>
-              <div class="form-item">
-                <label>最近一期是否支付</label>
-                <select v-model="form.business.is_pay">
-                  <option value="是">是</option>
-                  <option value="否">否</option>
-                </select>
-              </div>
-              <div class="form-item">
                 <label>商业模式简述</label>
                 <textarea v-model="form.business.model_description" rows="3"></textarea>
-              </div>
-              <div class="form-item">
-                <label>是否为外贸型</label>
-                <select v-model="form.business.is_waimao">
-                  <option value="是">是</option>
-                  <option value="否">否</option>
-                </select>
-              </div>
-              <div class="form-item">
-                <label>是否属于谨慎介入行业</label>
-                <select v-model="form.business.is_jinshen">
-                  <option value="是">是</option>
-                  <option value="否">否</option>
-                </select>
               </div>
             </div>
           </div>
           <div class="form-section">
-            <h3>资信状况</h3>
+            <h3>四、资信状况</h3>
             <h4 class="subsection-title">银行账户</h4>
             <div
               class="table-row"
@@ -357,7 +369,7 @@
               添加账户
             </el-button>
 
-            <h4 class="subsection-title">银行月末余额</h4>
+            <h4 class="subsection-title">银行月末余额（近一年）</h4>
             <div
               class="table-row"
               v-for="(row, index) in form.account_rows"
@@ -443,7 +455,7 @@
               添加日均行
             </el-button>
 
-            <h4 class="subsection-title">我司在保情况</h4>
+            <h4 class="subsection-title">我司在保情况（若有）</h4>
             <div
               class="table-row"
               v-for="(g, index) in form.guarantees"
@@ -612,25 +624,23 @@
             </div>
           </div>
           <div class="form-section">
-            <h3>用电情况</h3>
+            <h3>五、用电情况</h3>
             <div class="form-grid">
               <div class="form-item">
-                <label>是否采集用电量</label>
-                <select v-model="form.electricity.is_quantity">
-                  <option value="是">是</option>
-                  <option value="否">否</option>
+                <label>采集类型</label>
+                <select v-model="electricityCollectType">
+                  <option value="">请选择</option>
+                  <option value="quantity">用电量</option>
+                  <option value="cost">电费</option>
                 </select>
               </div>
-              <div class="form-item">
-                <label>是否采集电费</label>
-                <select v-model="form.electricity.is_cost">
-                  <option value="是">是</option>
-                  <option value="否">否</option>
-                </select>
-              </div>
-              <div class="form-item">
+              <div class="form-item wide-item">
                 <label>情况说明</label>
-                <textarea v-model="form.electricity.descript" rows="3"></textarea>
+                <textarea
+                  v-model="form.electricity.descript"
+                  rows="3"
+                  placeholder="优先采集用电量，适用于生产型企业。"
+                ></textarea>
               </div>
             </div>
 
@@ -679,7 +689,7 @@
           </div>
 
           <div class="form-section">
-            <h3>方案及还款分析</h3>
+            <h3>六、方案及还款分析</h3>
 
             <h4 class="subsection-title">项目方案</h4>
             <div class="form-grid">
@@ -701,17 +711,11 @@
               </div>
               <div class="form-item">
                 <label>企业保证</label>
-                <select v-model="form.analysis.plan.corp_guarantee">
-                  <option value="是">是</option>
-                  <option value="否">否</option>
-                </select>
+                <input type="text" v-model="form.analysis.plan.corp_guarantee" />
               </div>
               <div class="form-item">
                 <label>个人保证</label>
-                <select v-model="form.analysis.plan.personal_guarantee">
-                  <option value="是">是</option>
-                  <option value="否">否</option>
-                </select>
+                <input type="text" v-model="form.analysis.plan.personal_guarantee" />
               </div>
               <div class="form-item">
                 <label>抵押物</label>
@@ -753,6 +757,10 @@
                 <label>净收益</label>
                 <input type="number" v-model="form.analysis.financials.net_income" />
               </div>
+              <div class="form-item">
+                <label>利润去向</label>
+                <input type="text" v-model="form.analysis.profit_destination" />
+              </div>
             </div>
 
             <h4 class="subsection-title">指标评价</h4>
@@ -777,11 +785,11 @@
                 <input type="number" v-model="form.analysis.indicators.receivable_days" />
               </div>
               <div class="form-item">
-                <label>月/日均余额</label>
+                <label>月均余额或日均余额（万元）（任一）</label>
                 <input type="number" v-model="form.analysis.indicators.avg_balance" />
               </div>
               <div class="form-item">
-                <label>月还款额/净收益</label>
+                <label>月还款额（含本笔贷款） /月净收益对比 </label>
                 <input type="number" v-model="form.analysis.indicators.repayment_ratio" />
               </div>
               <div class="form-item">
@@ -799,7 +807,7 @@
                 </select>
               </div>
               <div class="form-item">
-                <label>是否增加担保人</label>
+                <label>是否增加有效担保人</label>
                 <select v-model="form.analysis.indicators.is_added_guarantor">
                   <option value="是">是</option>
                   <option value="否">否</option>
@@ -807,40 +815,60 @@
               </div>
             </div>
 
-            <h4 class="subsection-title">软信息 & 结论</h4>
+            <h4 class="subsection-title">软信息分析</h4>
             <div class="form-grid">
-              <div class="form-item">
+              <div class="form-item full-row large-textarea">
                 <label>软信息分析</label>
-                <textarea v-model="form.analysis.soft_info" rows="3"></textarea>
+                <textarea
+                  v-model="form.analysis.soft_info"
+                  rows="3"
+                  placeholder="家庭情况分析、老板品行分析等"
+                ></textarea>
               </div>
-              <div class="form-item">
+            </div>
+
+            <h4 class="subsection-title">综合评价</h4>
+            <div class="form-grid">
+              <div class="form-item full-row large-textarea">
                 <label>综合评价</label>
-                <textarea v-model="form.analysis.summary" rows="3"></textarea>
+                <textarea
+                  v-model="form.analysis.summary"
+                  rows="3"
+                  placeholder="结合指标、软信息、还款能力、还款意愿、资金调集能力综合分析"
+                ></textarea>
               </div>
             </div>
 
             <h4 class="subsection-title">项目额度</h4>
             <div class="form-grid">
-              <div class="form-item">
+              <div class="form-item full-row wide-input">
                 <label>额度测定</label>
-                <input type="text" v-model="form.analysis.limit.calculation" />
+                <input
+                  type="text"
+                  v-model="form.analysis.limit.calculation"
+                  placeholder="年净收益 * 贷款期限（年）*0.7 - 经营类贷款（年净收益需剔除贷款利息）"
+                />
               </div>
-              <div class="form-item">
+              <div class="form-item full-row wide-input">
                 <label>申请额度</label>
                 <input type="number" v-model="form.analysis.limit.apply_amount" />
               </div>
-              <div class="form-item">
+              <div class="form-item full-row wide-input">
                 <label>增额因素</label>
-                <input type="text" v-model="form.analysis.limit.increase_factors" />
+                <input
+                  type="text"
+                  v-model="form.analysis.limit.increase_factors"
+                  placeholder="是否增加其他有效保证人或车辆、设备等抵押物"
+                />
               </div>
             </div>
           </div>
           <div class="form-section">
-            <h3>资产负债表</h3>
+            <h3>附表1 资产负债表简表</h3>
             <div class="form-grid">
               <div class="form-item">
                 <label>报表日期</label>
-                <input type="date" v-model="form.bs.date" />
+                <input type="month" v-model="form.bs.date" />
               </div>
               <div class="form-item">
                 <label>货币资金</label>
@@ -902,8 +930,8 @@
           </div>
 
           <div class="form-section">
-            <h3>附件表</h3>
-            <h4 class="subsection-title">资产统计表</h4>
+            <h3>附表2资产统计表</h3>
+            <!-- <h4 class="subsection-title">资产统计表</h4> -->
             <div
               class="table-row"
               v-for="(asset, index) in form.asset_stats"
@@ -976,40 +1004,58 @@
           </div>
 
           <div class="form-section">
-            <h3>损益表</h3>
+            <h3>附表3.1 损益表</h3>
             <div class="form-grid">
               <div class="form-item">
                 <label>年份</label>
                 <input type="text" v-model="form.is_table.year" />
               </div>
               <div class="form-item">
-                <label>销售收入1名称</label>
-                <input type="text" v-model="form.is_table.s1_t" />
-              </div>
-              <div class="form-item">
-                <label>销售收入2名称</label>
-                <input type="text" v-model="form.is_table.s2_t" />
-              </div>
-              <div class="form-item">
-                <label>销售收入3名称</label>
-                <input type="text" v-model="form.is_table.s3_t" />
-              </div>
-              <div class="form-item">
-                <label>销售收入1金额</label>
-                <input type="number" v-model="form.is_table.s1" />
-              </div>
-              <div class="form-item">
-                <label>销售收入2金额</label>
-                <input type="number" v-model="form.is_table.s2" />
-              </div>
-              <div class="form-item">
-                <label>销售收入3金额</label>
-                <input type="number" v-model="form.is_table.s3" />
-              </div>
-              <div class="form-item">
                 <label>销售收入总额</label>
                 <input type="number" v-model="form.is_table.s_total" />
               </div>
+            </div>
+
+            <h4 class="subsection-title">销售收入明细</h4>
+            <div
+              class="table-row"
+              v-for="(item, index) in form.is_table.sales_list"
+              :key="'sales-' + index"
+            >
+              <div class="table-row-header">
+                <span>销售 {{ index + 1 }}</span>
+                <div class="row-actions">
+                  <el-button
+                    size="small"
+                    type="danger"
+                    plain
+                    @click="removeRow(form.is_table.sales_list, index)"
+                  >
+                    删除
+                  </el-button>
+                </div>
+              </div>
+              <div class="form-grid">
+                <div class="form-item">
+                  <label>项目名称</label>
+                  <input type="text" v-model="item.name" />
+                </div>
+                <div class="form-item">
+                  <label>金额</label>
+                  <input type="number" v-model="item.value" />
+                </div>
+              </div>
+            </div>
+            <el-button
+              type="primary"
+              plain
+              size="small"
+              @click="addRow(form.is_table.sales_list, createSalesItem)"
+            >
+              添加销售项
+            </el-button>
+
+            <div class="form-grid">
               <div class="form-item">
                 <label>物料成本</label>
                 <input type="number" v-model="form.is_table.material_cost" />
@@ -1093,7 +1139,7 @@
             </div>
           </div>
           <div class="form-section">
-            <h3>营业额校验</h3>
+            <h3>附表3.2 营业额校验</h3>
             <h4 class="subsection-title">校验数据</h4>
             <div
               class="table-row"
@@ -1159,7 +1205,7 @@
           </div>
 
           <div class="form-section">
-            <h3>流水分析</h3>
+            <h3>付表4 流水分析</h3>
             <h4 class="subsection-title">流入</h4>
             <div
               class="table-row"
@@ -1258,7 +1304,7 @@
   </div>
 </template>
 <script setup>
-import { reactive } from "vue";
+import { computed, reactive } from "vue";
 import axios from "axios";
 import { ElMessage } from "element-plus";
 
@@ -1283,6 +1329,8 @@ const createBusinessSite = () => ({
   building_area: "",
   land_area: "",
   ownership: "",
+  month_pay: "",
+  is_pay: "",
 });
 
 const createBusinessAccount = () => ({
@@ -1303,6 +1351,11 @@ const createDailyAvgRow = () => ({
   m9: "",
   m12: "",
   annual_avg: "",
+});
+
+const createSalesItem = () => ({
+  name: "",
+  value: "",
 });
 
 const createGuarantee = () => ({
@@ -1407,8 +1460,6 @@ const createForm = () => ({
   business_sites: [createBusinessSite()],
   business: {
     type: "",
-    month_pay: "",
-    is_pay: "",
     model_description: "",
     is_waimao: "",
     is_jinshen: "",
@@ -1457,6 +1508,7 @@ const createForm = () => ({
       revenue: "",
       net_income: "",
     },
+    profit_destination: "",
     indicators: {
       asset_debt_ratio: "",
       sales_debt_ratio: "",
@@ -1501,12 +1553,7 @@ const createForm = () => ({
   },
   is_table: {
     year: "",
-    s1_t: "",
-    s2_t: "",
-    s3_t: "",
-    s1: "",
-    s2: "",
-    s3: "",
+    sales_list: [createSalesItem()],
     s_total: "",
     material_cost: "",
     gross_profit: "",
@@ -1542,6 +1589,32 @@ const createForm = () => ({
 });
 
 const form = reactive(createForm());
+
+const electricityCollectType = computed({
+  get() {
+    if (form.electricity.is_quantity === "是") {
+      return "quantity";
+    }
+    if (form.electricity.is_cost === "是") {
+      return "cost";
+    }
+    return "";
+  },
+  set(value) {
+    if (value === "quantity") {
+      form.electricity.is_quantity = "是";
+      form.electricity.is_cost = "否";
+      return;
+    }
+    if (value === "cost") {
+      form.electricity.is_quantity = "否";
+      form.electricity.is_cost = "是";
+      return;
+    }
+    form.electricity.is_quantity = "";
+    form.electricity.is_cost = "";
+  },
+});
 
 const addRow = (list, factory) => {
   list.push(factory());
@@ -1638,121 +1711,213 @@ const saveWithoutPredict = async () => {
 };
 </script>
 <style scoped>
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600&family=ZCOOL+XiaoWei&display=swap");
+
 .form-container {
-  padding: 20px;
+  --bg-1: #f7f3ec;
+  --bg-2: #f2f6f5;
+  --surface: #ffffff;
+  --surface-alt: #fbf9f3;
+  --border: #e6dfd3;
+  --text: #1d2326;
+  --muted: #6e7377;
+  --accent: #2b7a78;
+  --accent-2: #e8a860;
+  --accent-3: #235f68;
+  --field-height: 40px;
+  padding: 24px;
   max-width: 100%;
   margin: 0 auto;
+  min-height: calc(100vh - 64px);
+  color: var(--text);
+  font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-size: 15px;
+  background:
+    radial-gradient(circle at 12% 12%, rgba(43, 122, 120, 0.12), transparent 45%),
+    radial-gradient(circle at 88% 18%, rgba(232, 168, 96, 0.15), transparent 42%),
+    linear-gradient(180deg, var(--bg-1), var(--bg-2));
+  border-radius: 18px;
 }
 
 .page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  padding: 16px 18px;
+  margin-bottom: 18px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: 0 12px 30px rgba(20, 28, 34, 0.08);
 }
 
 .page-header h2 {
   margin: 0;
-  font-size: 20px;
+  font-size: 28px;
   font-weight: 600;
+  letter-spacing: 0.5px;
+  color: var(--accent-3);
 }
 
 .subtitle {
-  margin: 4px 0 0;
-  color: #666;
-  font-size: 13px;
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 14px;
 }
 
 .main-content {
   display: flex;
-  gap: 20px;
-  margin-top: 20px;
+  gap: 22px;
+  margin-top: 18px;
+  align-items: flex-start;
 }
 
 .input-section {
   flex: 4;
   overflow-y: auto;
-  max-height: calc(100vh - 100px);
-  padding-right: 20px;
+  max-height: calc(100vh - 140px);
+  padding-right: 8px;
+}
+
+.input-section::-webkit-scrollbar {
+  width: 8px;
+}
+
+.input-section::-webkit-scrollbar-thumb {
+  background: rgba(43, 122, 120, 0.35);
+  border-radius: 10px;
 }
 
 .output-section {
   flex: 3;
   position: sticky;
-  top: 20px;
-  height: calc(100vh - 100px);
+  top: 16px;
+  height: calc(100vh - 140px);
 }
 
 .form-section {
-  background-color: #fff;
-  border-radius: 8px;
-  padding: 15px;
-  margin-bottom: 20px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background-color: var(--surface);
+  border-radius: 14px;
+  padding: 18px;
+  margin-bottom: 18px;
+  border: 1px solid var(--border);
+  box-shadow: 0 10px 20px rgba(20, 28, 34, 0.06);
+  position: relative;
+  overflow: hidden;
+  animation: sectionReveal 0.55s ease both;
+}
+
+.form-section::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 6px;
+  background: linear-gradient(180deg, var(--accent), transparent);
+  opacity: 0.6;
 }
 
 .form-section h3 {
-  margin: 0 0 15px 0;
-  color: #333;
-  font-size: 1.1em;
-  border-bottom: 2px solid #eee;
-  padding-bottom: 8px;
+  margin: 0 0 14px 0;
+  color: var(--accent-3);
+  font-size: 1.15em;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  padding-bottom: 10px;
+  border-bottom: 1px dashed var(--border);
 }
 
 .subsection-title {
   margin: 12px 0 10px;
-  color: #444;
-  font-size: 0.95em;
+  color: var(--accent);
+  font-size: 1em;
   font-weight: 600;
 }
 
 .form-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 15px;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 14px;
 }
 
 .form-item {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 6px;
 }
 
 .form-item label {
   font-weight: 500;
-  color: #666;
-  font-size: 0.9em;
+  color: var(--muted);
+  font-size: 0.95em;
 }
 
 .form-item input,
 .form-item select,
 .form-item textarea {
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 0.9em;
+  padding: 9px 10px;
+  border: 1px solid #d9d3c8;
+  border-radius: 8px;
+  font-size: 0.98em;
+  background: var(--surface-alt);
+  height: var(--field-height);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.form-item input:focus,
+.form-item select:focus,
+.form-item textarea:focus {
+  border-color: var(--accent);
+  background: #fffdf9;
+  box-shadow: 0 0 0 3px rgba(43, 122, 120, 0.15);
+  outline: none;
 }
 
 .form-item textarea {
-  min-height: 80px;
+  min-height: var(--field-height);
+  resize: none;
+  line-height: 1.4;
+}
+
+.form-item.full-row {
+  grid-column: 1 / -1;
+}
+
+.form-item.wide-item {
+  grid-column: span 2;
+}
+
+.form-item.wide-input input,
+.form-item.wide-input textarea,
+.form-item.wide-input select {
+  width: 100%;
+}
+
+.form-item.large-textarea textarea {
+  height: 140px;
+  min-height: 140px;
   resize: vertical;
 }
+
 .table-row {
-  border: 1px dashed #e5e5e5;
-  border-radius: 6px;
-  padding: 12px;
-  margin-bottom: 12px;
-  background-color: #fafafa;
+  border: 1px dashed #dcd5ca;
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 14px;
+  background:
+    linear-gradient(180deg, rgba(232, 168, 96, 0.08), transparent 60%),
+    #fff;
 }
 
 .table-row-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
-  color: #555;
+  margin-bottom: 12px;
+  color: var(--accent-3);
   font-weight: 600;
-  font-size: 0.9em;
+  font-size: 0.98em;
 }
 
 .row-actions {
@@ -1764,17 +1929,19 @@ const saveWithoutPredict = async () => {
   text-align: center;
   margin-top: 20px;
   padding: 20px;
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background-color: var(--surface);
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  box-shadow: 0 12px 26px rgba(20, 28, 34, 0.08);
 }
 
 .result-container {
-  background-color: #fff;
-  border-radius: 8px;
+  background-color: var(--surface);
+  border-radius: 14px;
   padding: 20px;
   height: 100%;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--border);
+  box-shadow: 0 14px 30px rgba(20, 28, 34, 0.1);
   overflow-y: auto;
 }
 
@@ -1783,27 +1950,27 @@ const saveWithoutPredict = async () => {
 }
 
 .warning {
-  color: #f0ad4e;
-  font-size: 1.2em;
-  font-weight: bold;
+  color: #b8751a;
+  font-size: 1.15em;
+  font-weight: 600;
 }
 
 .error {
-  color: #d9534f;
-  font-size: 1.2em;
-  font-weight: bold;
+  color: #b6463c;
+  font-size: 1.15em;
+  font-weight: 600;
 }
 
 .success {
-  color: #5cb85c;
-  font-size: 1.2em;
-  font-weight: bold;
+  color: #2f7b4a;
+  font-size: 1.15em;
+  font-weight: 600;
 }
 
 .prediction-value {
   margin-top: 10px;
-  font-size: 1.1em;
-  color: #333;
+  font-size: 1.05em;
+  color: var(--accent-3);
 }
 
 .issues-list {
@@ -1811,7 +1978,7 @@ const saveWithoutPredict = async () => {
 }
 
 .issues-title {
-  color: #666;
+  color: var(--muted);
   font-weight: 500;
 }
 
@@ -1822,30 +1989,30 @@ const saveWithoutPredict = async () => {
 }
 
 .issues-list li {
-  color: #666;
+  color: var(--muted);
   margin-bottom: 5px;
 }
 
 .no-result {
-  color: #999;
+  color: #8c8f92;
   text-align: center;
   padding: 40px 0;
 }
 
 .prediction-text {
   white-space: pre-line;
-  line-height: 1.6;
-  color: #333;
-  font-size: 1.1em;
+  line-height: 1.7;
+  color: #2a3134;
+  font-size: 1.05em;
   margin: 20px 0;
-  padding: 15px;
-  background-color: #f8f9fa;
-  border-radius: 4px;
-  border-left: 4px solid #007bff;
+  padding: 16px;
+  background-color: #f9f6f0;
+  border-radius: 8px;
+  border-left: 4px solid var(--accent-2);
 }
 
 .prediction-text strong {
-  color: #0056b3;
+  color: var(--accent-3);
 }
 
 .prediction-text br {
@@ -1863,18 +2030,54 @@ const saveWithoutPredict = async () => {
 .loading-spinner {
   width: 50px;
   height: 50px;
-  border: 5px solid #f3f3f3;
-  border-top: 5px solid #3498db;
+  border: 5px solid #efe9dd;
+  border-top: 5px solid var(--accent);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 20px;
 }
 
 .loading-text {
-  color: #666;
-  font-size: 1.1em;
+  color: var(--muted);
+  font-size: 1.05em;
   text-align: center;
   animation: pulse 1.5s ease-in-out infinite;
+}
+
+:deep(.el-button) {
+  border-radius: 10px;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+:deep(.el-button--primary) {
+  background: linear-gradient(135deg, var(--accent), #3c9c98);
+  border: none;
+  color: #fff;
+}
+
+:deep(.el-button--primary.is-plain) {
+  background: rgba(43, 122, 120, 0.08);
+  border: 1px solid rgba(43, 122, 120, 0.3);
+  color: var(--accent-3);
+  padding: 8px 18px;
+  font-size: 14px;
+}
+
+:deep(.el-button--danger.is-plain) {
+  border-color: rgba(182, 70, 60, 0.4);
+  color: #b6463c;
+}
+
+@keyframes sectionReveal {
+  0% {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes spin {
@@ -1883,8 +2086,44 @@ const saveWithoutPredict = async () => {
 }
 
 @keyframes pulse {
-  0% { opacity: 0.6; }
+  0% { opacity: 0.55; }
   50% { opacity: 1; }
-  100% { opacity: 0.6; }
+  100% { opacity: 0.55; }
+}
+
+@media (max-width: 1080px) {
+  .main-content {
+    flex-direction: column;
+  }
+
+  .output-section {
+    position: static;
+    height: auto;
+  }
+
+  .input-section {
+    max-height: none;
+    padding-right: 0;
+  }
+}
+
+@media (max-width: 720px) {
+  .form-container {
+    padding: 16px;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-item.wide-item {
+    grid-column: 1 / -1;
+  }
 }
 </style>

@@ -208,7 +208,12 @@ def sanitize_filename(name):
     return re.sub(r'[\\\\/:*?"<>|]+', "_", text)
 
 def build_doc_context(row):
-    business_sites = normalize_list(row.get("business_sites_json"))
+    business_sites_raw = normalize_list(row.get("business_sites_json"))
+    business_sites = []
+    for site in business_sites_raw:
+        normalized = {k: normalize_value(v) for k, v in site.items()}
+        normalized["is_pay"] = normalize_bool(site.get("is_pay"))
+        business_sites.append(normalized)
     business_accounts = normalize_list(row.get("business_accounts_json"))
     account_rows = normalize_list(row.get("account_rows_json"))
     daily_avg_balance = normalize_list(row.get("daily_avg_balance_json"))
@@ -219,6 +224,19 @@ def build_doc_context(row):
     rev_check_items = normalize_list(row.get("rev_check_items_json"))
     cashflow_in = normalize_list(row.get("cashflow_in_json"))
     cashflow_out = normalize_list(row.get("cashflow_out_json"))
+
+    sales_list = normalize_list(row.get("is_table_sales_list_json"))
+    if not sales_list:
+        legacy_pairs = [
+            ("is_table_s1_t", "is_table_s1"),
+            ("is_table_s2_t", "is_table_s2"),
+            ("is_table_s3_t", "is_table_s3"),
+        ]
+        for name_key, value_key in legacy_pairs:
+            name_val = normalize_value(row.get(name_key))
+            value_val = normalize_value(row.get(value_key))
+            if name_val or value_val:
+                sales_list.append({"name": name_val, "value": value_val})
 
     context = {
         "project": {
@@ -341,7 +359,7 @@ def build_doc_context(row):
                 "apply_amount": normalize_value(row.get("analysis_limit_apply_amount")),
                 "increase_factors": normalize_value(row.get("analysis_limit_increase_factors")),
             },
-            "profit_destination": "",
+            "profit_destination": normalize_value(row.get("analysis_profit_destination")),
         },
         "bs": {
             "date": normalize_value(row.get("bs_date")),
@@ -368,6 +386,7 @@ def build_doc_context(row):
         },
         "is_table": {
             "year": normalize_value(row.get("is_table_year")),
+            "sales_list": sales_list,
             "s1_t": normalize_value(row.get("is_table_s1_t")),
             "s2_t": normalize_value(row.get("is_table_s2_t")),
             "s3_t": normalize_value(row.get("is_table_s3_t")),
