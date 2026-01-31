@@ -163,6 +163,9 @@ CREATE TABLE IF NOT EXISTS loan_application (
     guarantees_amount_total DECIMAL(18,2),
     guarantees_balance_total DECIMAL(18,2),
     existing_loans_json JSON,
+    existing_loans_amount_total DECIMAL(18,2),
+    existing_loans_balance_total DECIMAL(18,2),
+    existing_loans_monthly_payment_total DECIMAL(18,2),
     electricity_items_json JSON,
     asset_stats_json JSON,
     rev_check_items_json JSON,
@@ -354,6 +357,14 @@ const hasRowContent = (row) => {
     return Object.values(row).some((value) => value !== null && value !== undefined && value !== '');
 };
 
+const parseNumber = (value) => {
+    if (value === '' || value === null || value === undefined) {
+        return 0;
+    }
+    const num = Number(value);
+    return Number.isFinite(num) ? num : 0;
+};
+
 const normalizeCell = (value) => (value === '' || value === undefined ? null : value);
 const normalizeScalar = (value) => (value === '' ? null : value);
 const buildMonthlyValues = (row) => monthKeys.map((key) => normalizeCell(row ? row[key] : null));
@@ -405,7 +416,8 @@ const mainColumns = [
     'rev_check_total_value', 'rev_check_est_total', 'rev_check_is_revenue', 'rev_check_diff_rate',
     'rev_check_method', 'business_sites_json', 'business_accounts_json', 'account_rows_json',
     'daily_avg_balance_json', 'guarantees_json', 'guarantees_amount_total', 'guarantees_balance_total',
-    'existing_loans_json', 'electricity_items_json', 'asset_stats_json', 'rev_check_items_json', 'cashflow_in_json',
+    'existing_loans_json', 'existing_loans_amount_total', 'existing_loans_balance_total', 'existing_loans_monthly_payment_total',
+    'electricity_items_json', 'asset_stats_json', 'rev_check_items_json', 'cashflow_in_json',
     'cashflow_out_json', 'predicted', 'prediction_text',
     'expert_opinion', 'expert_amount', 'created_by'
 ];
@@ -432,6 +444,19 @@ const mapMainValues = (payload) => {
     const isTable = payload.is_table || {};
     const revCheck = payload.rev_check || {};
     const guaranteesTotals = payload.guarantees_totals || {};
+    const existingLoansTotals = payload.existing_loans_totals || {};
+    const existingLoans = normalizeArray(payload.existing_loans);
+    const existingTotalsProvided = Object.values(existingLoansTotals).some(
+        (value) => value !== null && value !== undefined && value !== ''
+    );
+    const existingHasValues = existingLoans.some((loan) =>
+        ['amount', 'balance', 'monthly_payment'].some((key) => loan && loan[key] !== '' && loan[key] !== null && loan[key] !== undefined)
+    );
+    const existingTotalsComputed = {
+        amount_total: existingLoans.reduce((sum, loan) => sum + parseNumber(loan.amount), 0),
+        balance_total: existingLoans.reduce((sum, loan) => sum + parseNumber(loan.balance), 0),
+        monthly_payment_total: existingLoans.reduce((sum, loan) => sum + parseNumber(loan.monthly_payment), 0),
+    };
 
     return [
         project.a_owner || null,
@@ -573,6 +598,15 @@ const mapMainValues = (payload) => {
         guaranteesTotals.amount_total || null,
         guaranteesTotals.balance_total || null,
         serializeArray(payload.existing_loans),
+        existingTotalsProvided
+            ? (existingLoansTotals.amount_total || null)
+            : (existingHasValues ? existingTotalsComputed.amount_total : null),
+        existingTotalsProvided
+            ? (existingLoansTotals.balance_total || null)
+            : (existingHasValues ? existingTotalsComputed.balance_total : null),
+        existingTotalsProvided
+            ? (existingLoansTotals.monthly_payment_total || null)
+            : (existingHasValues ? existingTotalsComputed.monthly_payment_total : null),
         serializeArray(electricity.items || []),
         serializeArray(payload.asset_stats),
         serializeArray(revCheck.items || []),

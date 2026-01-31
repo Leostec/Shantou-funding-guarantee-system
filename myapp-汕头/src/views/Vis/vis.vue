@@ -395,11 +395,11 @@
                 </div>
                 <div class="form-item" v-for="month in months" :key="month.key">
                   <label>{{ month.label }}余额</label>
-                  <input type="number" v-model="row[month.key]" />
+                  <input type="number" v-model="row[month.key]" @input="updateAccountRowAvg(row)" />
                 </div>
                 <div class="form-item">
                   <label>月均余额</label>
-                  <input type="number" v-model="row.avg" />
+                  <input type="number" v-model="row.avg" readonly />
                 </div>
               </div>
             </div>
@@ -438,11 +438,11 @@
                 </div>
                 <div class="form-item" v-for="month in quarterMonths" :key="month.key">
                   <label>{{ month.label }}日均</label>
-                  <input type="number" v-model="row[month.key]" />
+                  <input type="number" v-model="row[month.key]" @input="updateDailyAvgRow(row)" />
                 </div>
                 <div class="form-item">
                   <label>全年日均</label>
-                  <input type="number" v-model="row.annual_avg" />
+                  <input type="number" v-model="row.annual_avg" readonly />
                 </div>
               </div>
             </div>
@@ -545,7 +545,7 @@
                     size="small"
                     type="danger"
                     plain
-                    @click="removeRow(form.existing_loans, index)"
+                    @click="removeExistingLoan(index)"
                   >
                     删除
                   </el-button>
@@ -558,11 +558,11 @@
                 </div>
                 <div class="form-item">
                   <label>贷款金额</label>
-                  <input type="number" v-model="loanItem.amount" />
+                  <input type="number" v-model="loanItem.amount" @input="updateExistingLoansTotals" />
                 </div>
                 <div class="form-item">
                   <label>贷款余额</label>
-                  <input type="number" v-model="loanItem.balance" />
+                  <input type="number" v-model="loanItem.balance" @input="updateExistingLoansTotals" />
                 </div>
                 <div class="form-item">
                   <label>担保方式</label>
@@ -570,7 +570,7 @@
                 </div>
                 <div class="form-item">
                   <label>每月还款本息</label>
-                  <input type="number" v-model="loanItem.monthly_payment" />
+                  <input type="number" v-model="loanItem.monthly_payment" @input="updateExistingLoansTotals" />
                 </div>
                 <div class="form-item">
                   <label>开始日期</label>
@@ -594,10 +594,24 @@
               type="primary"
               plain
               size="small"
-              @click="addRow(form.existing_loans, createExistingLoan)"
+              @click="addExistingLoan"
             >
               添加现有贷款
             </el-button>
+            <div class="form-grid">
+              <div class="form-item">
+                <label>贷款金额合计</label>
+                <input type="number" v-model="form.existing_loans_totals.amount_total" readonly />
+              </div>
+              <div class="form-item">
+                <label>贷款余额合计</label>
+                <input type="number" v-model="form.existing_loans_totals.balance_total" readonly />
+              </div>
+              <div class="form-item">
+                <label>每月还款本息合计</label>
+                <input type="number" v-model="form.existing_loans_totals.monthly_payment_total" readonly />
+              </div>
+            </div>
 
             <h4 class="subsection-title">征信与诉讼</h4>
             <div class="form-grid">
@@ -670,11 +684,11 @@
                 </div>
                 <div class="form-item" v-for="month in months" :key="month.key">
                   <label>{{ month.label }}用电</label>
-                  <input type="number" v-model="item[month.key]" />
+                  <input type="number" v-model="item[month.key]" @input="updateElectricityTotal(item)" />
                 </div>
                 <div class="form-item">
                   <label>合计</label>
-                  <input type="number" v-model="item.total" />
+                  <input type="number" v-model="item.total" readonly />
                 </div>
               </div>
             </div>
@@ -1232,11 +1246,11 @@
                 </div>
                 <div class="form-item" v-for="month in months" :key="month.key">
                   <label>{{ month.label }}金额</label>
-                  <input type="number" v-model="item[month.key]" />
+                  <input type="number" v-model="item[month.key]" @input="updateCashflowTotal(item)" />
                 </div>
                 <div class="form-item">
                   <label>合计</label>
-                  <input type="number" v-model="item.total" />
+                  <input type="number" v-model="item.total" readonly />
                 </div>
               </div>
             </div>
@@ -1275,11 +1289,11 @@
                 </div>
                 <div class="form-item" v-for="month in months" :key="month.key">
                   <label>{{ month.label }}金额</label>
-                  <input type="number" v-model="item[month.key]" />
+                  <input type="number" v-model="item[month.key]" @input="updateCashflowTotal(item)" />
                 </div>
                 <div class="form-item">
                   <label>合计</label>
-                  <input type="number" v-model="item.total" />
+                  <input type="number" v-model="item.total" readonly />
                 </div>
               </div>
             </div>
@@ -1473,6 +1487,11 @@ const createForm = () => ({
     balance_total: "",
   },
   existing_loans: [createExistingLoan()],
+  existing_loans_totals: {
+    amount_total: "",
+    balance_total: "",
+    monthly_payment_total: "",
+  },
   credit: {
     inquiry_count: "",
     adverse_info: "",
@@ -1625,6 +1644,129 @@ const removeRow = (list, index) => {
     list.splice(index, 1);
   }
 };
+
+const updateExistingLoansTotals = () => {
+  let hasValue = false;
+  let amountSum = 0;
+  let balanceSum = 0;
+  let paymentSum = 0;
+  form.existing_loans.forEach((loan) => {
+    const amount = loan.amount;
+    const balance = loan.balance;
+    const payment = loan.monthly_payment;
+    if (amount !== "" && amount !== null && amount !== undefined) {
+      hasValue = true;
+      const num = Number(amount);
+      if (!Number.isFinite(num)) {
+        return;
+      }
+      amountSum += num;
+    }
+    if (balance !== "" && balance !== null && balance !== undefined) {
+      hasValue = true;
+      const num = Number(balance);
+      if (!Number.isFinite(num)) {
+        return;
+      }
+      balanceSum += num;
+    }
+    if (payment !== "" && payment !== null && payment !== undefined) {
+      hasValue = true;
+      const num = Number(payment);
+      if (!Number.isFinite(num)) {
+        return;
+      }
+      paymentSum += num;
+    }
+  });
+  form.existing_loans_totals.amount_total = hasValue ? amountSum : "";
+  form.existing_loans_totals.balance_total = hasValue ? balanceSum : "";
+  form.existing_loans_totals.monthly_payment_total = hasValue ? paymentSum : "";
+};
+
+const addExistingLoan = () => {
+  form.existing_loans.push(createExistingLoan());
+  updateExistingLoansTotals();
+};
+
+const removeExistingLoan = (index) => {
+  if (form.existing_loans.length > 1) {
+    form.existing_loans.splice(index, 1);
+  }
+  updateExistingLoansTotals();
+};
+
+const updateAccountRowAvg = (row) => {
+  const values = months.map((month) => {
+    const raw = row[month.key];
+    if (raw === "" || raw === null || raw === undefined) {
+      return null;
+    }
+    const num = Number(raw);
+    return Number.isFinite(num) ? num : null;
+  });
+  if (values.some((value) => value === null)) {
+    row.avg = "";
+    return;
+  }
+  const sum = values.reduce((acc, value) => acc + value, 0);
+  row.avg = (sum / values.length).toFixed(2);
+};
+
+const updateDailyAvgRow = (row) => {
+  const values = quarterMonths.map((month) => {
+    const raw = row[month.key];
+    if (raw === "" || raw === null || raw === undefined) {
+      return null;
+    }
+    const num = Number(raw);
+    return Number.isFinite(num) ? num : null;
+  });
+  if (values.some((value) => value === null)) {
+    row.annual_avg = "";
+    return;
+  }
+  const sum = values.reduce((acc, value) => acc + value, 0);
+  row.annual_avg = (sum / values.length).toFixed(2);
+};
+
+const updateElectricityTotal = (item) => {
+  let hasValue = false;
+  let sum = 0;
+  for (const month of months) {
+    const raw = item[month.key];
+    if (raw === "" || raw === null || raw === undefined) {
+      continue;
+    }
+    hasValue = true;
+    const num = Number(raw);
+    if (!Number.isFinite(num)) {
+      item.total = "";
+      return;
+    }
+    sum += num;
+  }
+  item.total = hasValue ? sum : "";
+};
+
+const updateCashflowTotal = (item) => {
+  let hasValue = false;
+  let sum = 0;
+  for (const month of months) {
+    const raw = item[month.key];
+    if (raw === "" || raw === null || raw === undefined) {
+      continue;
+    }
+    hasValue = true;
+    const num = Number(raw);
+    if (!Number.isFinite(num)) {
+      item.total = "";
+      return;
+    }
+    sum += num;
+  }
+  item.total = hasValue ? sum : "";
+};
 const DRAFT_KEY = "vis_form_draft_v2";
 
 const saveDraft = () => {
@@ -1668,6 +1810,7 @@ const restoreDraft = () => {
     const parsed = JSON.parse(raw);
     const data = parsed?.data || parsed;
     applyDraft(form, data);
+    updateExistingLoansTotals();
     ElMessage.success("已恢复上次暂存内容");
   } catch (error) {
     console.error("恢复暂存失败:", error);
@@ -1677,6 +1820,7 @@ const restoreDraft = () => {
 
 const saveWithoutPredict = async () => {
   try {
+    updateExistingLoansTotals();
     const createdBy = localStorage.getItem("username") || "";
     const payload = JSON.parse(JSON.stringify(form));
     const projectManager = form.project.market_manager || form.project.a_owner || "";

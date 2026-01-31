@@ -203,6 +203,24 @@ def normalize_list(value):
             normalized.append({k: normalize_value(v) for k, v in item.items()})
     return normalized
 
+def parse_number(value):
+    if value is None or value == "":
+        return 0.0
+    if isinstance(value, (int, float, Decimal)):
+        return float(value)
+    if isinstance(value, str):
+        text = value.strip().replace(",", "")
+        if not text:
+            return 0.0
+        match = re.search(r"-?\d+(?:\.\d+)?", text)
+        if not match:
+            return 0.0
+        try:
+            return float(match.group())
+        except ValueError:
+            return 0.0
+    return 0.0
+
 def sanitize_filename(name):
     text = str(name or "report")
     return re.sub(r'[\\\\/:*?"<>|]+', "_", text)
@@ -224,6 +242,20 @@ def build_doc_context(row):
     rev_check_items = normalize_list(row.get("rev_check_items_json"))
     cashflow_in = normalize_list(row.get("cashflow_in_json"))
     cashflow_out = normalize_list(row.get("cashflow_out_json"))
+
+    existing_amount_total = sum(parse_number(item.get("amount")) for item in existing_loans)
+    existing_balance_total = sum(parse_number(item.get("balance")) for item in existing_loans)
+    existing_payment_total = sum(parse_number(item.get("monthly_payment")) for item in existing_loans)
+    has_existing_values = any(
+        str(item.get("amount") or item.get("balance") or item.get("monthly_payment") or "").strip() != ""
+        for item in existing_loans
+    )
+    existing_amount_db = row.get("existing_loans_amount_total")
+    existing_balance_db = row.get("existing_loans_balance_total")
+    existing_payment_db = row.get("existing_loans_monthly_payment_total")
+    has_existing_db = any(
+        val not in (None, "") for val in (existing_amount_db, existing_balance_db, existing_payment_db)
+    )
 
     sales_list = normalize_list(row.get("is_table_sales_list_json"))
     if not sales_list:
@@ -306,6 +338,11 @@ def build_doc_context(row):
             "balance_total": normalize_value(row.get("guarantees_balance_total")),
         },
         "existing_loans": existing_loans,
+        "existing_loans_totals": {
+            "amount_total": normalize_value(existing_amount_db) if has_existing_db else (f"{existing_amount_total:.2f}" if has_existing_values else ""),
+            "balance_total": normalize_value(existing_balance_db) if has_existing_db else (f"{existing_balance_total:.2f}" if has_existing_values else ""),
+            "monthly_payment_total": normalize_value(existing_payment_db) if has_existing_db else (f"{existing_payment_total:.2f}" if has_existing_values else ""),
+        },
         "credit": {
             "inquiry_count": normalize_value(row.get("credit_inquiry_count")),
             "adverse_info": normalize_value(row.get("credit_adverse_info")),
