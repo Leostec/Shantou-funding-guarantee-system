@@ -30,7 +30,7 @@
       <template #bodyCell="{ column, record }">
         <template v-if="column.key === 'actions'">
           <a-space>
-            <a-button type="link" :loading="predictingId === (record.id || record.project_number)" @click="handlePredict(record)">??</a-button>
+            <a-button type="link" :loading="predictingId === (record.id || record.project_number)" @click="handlePredict(record)">预测</a-button>
             <a-button type="link" @click="openEdit(record)">编辑</a-button>
             <a-button type="link" @click="downloadRecord(record)">下载</a-button>
             <a-popconfirm
@@ -2181,6 +2181,7 @@ const handlePredict = async (record: RecordItem) => {
     message.error('????ID?????');
     return;
   }
+  console.log('??????:', record);
   predictingId.value = id;
   try {
     const resp = await axios.post('http://127.0.0.1:5000/demo', record);
@@ -2188,8 +2189,7 @@ const handlePredict = async (record: RecordItem) => {
     if (resp.data) {
       if (typeof resp.data === 'object') {
         Object.keys(resp.data).forEach((key) => {
-          predictionText += `${key}: ${resp.data[key]}
-`;
+          predictionText += `${key}: ${resp.data[key]}\n`;
         });
       } else {
         predictionText = resp.data.toString();
@@ -2197,7 +2197,7 @@ const handlePredict = async (record: RecordItem) => {
     }
 
     let predictedAmount = Number(
-      resp.data?.['??????'] ??
+      resp.data?.['模型预测金额'] ??
       resp.data?.model_result ??
       resp.data?.predicted ??
       resp.data?.prediction
@@ -2215,19 +2215,19 @@ const handlePredict = async (record: RecordItem) => {
     });
 
     Modal.info({
-      title: '????',
+      title: '预测完成',
       width: 900,
       centered: true,
       content: h('div', { style: 'max-height:60vh;overflow:auto;' }, [
-        h('p', `?????${predictedAmount ?? '???'}`),
-        h('p', `?????${predictionText || '?'}`),
+        h('p', `预测额度：${predictedAmount ?? '未识别'}`),
+        h('p', `模型文本：${predictionText || '无'}`),
       ]),
     });
 
     await fetchEntries();
   } catch (error: any) {
-    console.error('????', error);
-    message.error(error?.response?.data?.error || '????');
+    console.error('预测失败', error);
+    message.error(error?.response?.data?.error || '预测失败');
   } finally {
     predictingId.value = null;
   }
@@ -2235,7 +2235,7 @@ const handlePredict = async (record: RecordItem) => {
 
 const submitEdit = async () => {
   if (!currentRecordId.value) {
-    message.error('缺少记录ID，无法更新');
+    message.error('????ID?????');
     return;
   }
   saving.value = true;
@@ -2256,7 +2256,7 @@ const submitEdit = async () => {
 const deleteRecord = async (record: RecordItem) => {
   const id = record.id || record.project_number;
   if (!id) {
-    message.error('缺少记录ID，无法删除');
+    message.error('????ID?????');
     return;
   }
   try {
@@ -2302,7 +2302,7 @@ const cleanLabel = (label: string) => {
 const downloadRecord = async (record: RecordItem) => {
   const id = record.id || record.project_number;
   if (!id) {
-    message.error('缺少记录ID，无法下载');
+    message.error('????ID?????');
     return;
   }
 
